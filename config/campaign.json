@@ -1,0 +1,122 @@
+{
+  "campaign": "USP15_DUSP_R1",
+  "scope": "Computational binder design and in-silico selectivity screening only",
+  "target": {
+    "protein": "Human USP15",
+    "uniprot": "Q9Y4E8",
+    "structure": "3T9L",
+    "chain": "A",
+    "residue_range": "6-134",
+    "hotspots": ["A50", "A52", "A53", "A55", "A57", "A61"]
+  },
+  "backbone_generation": {
+    "model_family": "RFD1",
+    "contig_pools": [
+      {
+        "pool": "USP15_R1_short_base",
+        "contig": "A6-134/0 45-60",
+        "model_weights": "Complex_base"
+      },
+      {
+        "pool": "USP15_R1_short_beta",
+        "contig": "A6-134/0 45-60",
+        "model_weights": "Complex_beta"
+      },
+      {
+        "pool": "USP15_R1_long_base",
+        "contig": "A6-134/0 61-80",
+        "model_weights": "Complex_base"
+      },
+      {
+        "pool": "USP15_R1_long_beta",
+        "contig": "A6-134/0 61-80",
+        "model_weights": "Complex_beta"
+      }
+    ],
+    "preview_timesteps": 15,
+    "pilot_backbones_per_pool": 100,
+    "scale_backbones_per_pool": 1000,
+    "repeat_limit_backbones_total": 8000,
+    "hard_filters": {
+      "N_contact_hotspots": {
+        "operator": ">=",
+        "value": 8
+      },
+      "N_hotspots_on_interface": {
+        "operator": ">=",
+        "value": 4
+      }
+    }
+  },
+  "sequence_design": {
+    "protocol": "LigandMPNN (ProteinMPNN weights)",
+    "sequences_per_backbone": 3,
+    "sampling_temperature": 0.1,
+    "omit_amino_acids": ["C"],
+    "amino_acid_bias": null,
+    "sidechain_packing": "LigandMPNN OpenMM logic",
+    "pyrosetta": false
+  },
+  "positive_acceptance": {
+    "af2_ipae_max": 10,
+    "af2_target_aligned_binder_rmsd_A_max": 2,
+    "af2_binder_plddt_min": 80,
+    "interface_delta_sasa_A2_min": 600,
+    "severe_geometric_clash_allowed": false,
+    "hotspots_on_interface_min": 4
+  },
+  "non_pyrosetta_interface_ranking": {
+    "openmm_interaction_energy": "ranking only",
+    "buried_polar_atom_diagnostic": "ranking only; not Rosetta-equivalent",
+    "interface_hydrophobicity": "exclude abnormal hydrophobic patches"
+  },
+  "protein_qc": [
+    "seq_composition",
+    "esm_if",
+    "dssp",
+    "proteinsol"
+  ],
+  "off_target_screen": {
+    "targets": [
+      {
+        "protein": "Human USP4",
+        "structure": "5CTR",
+        "domain": "DUSP"
+      },
+      {
+        "protein": "Human USP11",
+        "structure": "4MEL",
+        "domain": "DUSP"
+      }
+    ],
+    "af2_tests": [
+      {
+        "model": "model_1_ptm",
+        "mode": "target-template",
+        "recycles": 3
+      },
+      {
+        "model": "model_1_multimer",
+        "mode": "target-template",
+        "recycles": 3
+      }
+    ],
+    "acceptance_per_off_target_and_test": {
+      "delta_ipae_min": 5,
+      "and_one_of": {
+        "off_target_ipae_min": 15,
+        "binder_rmsd_A_min_exclusive": 4
+      }
+    }
+  },
+  "gates": {
+    "scale_only_after": [
+      "validated target PDB",
+      "all four 15-step previews",
+      "all four 100-backbone pilots",
+      "LigandMPNN plus AF2 smoke test"
+    ],
+    "success_min_final_candidates": 5,
+    "do_not_relax_thresholds_after_backbone_limit": true
+  }
+}

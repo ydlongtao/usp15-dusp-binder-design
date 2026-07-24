@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors and OS files
+.DS_Store
+.idea/
+.vscode/
+
+# Credentials and local environment
+.env
+.env.*
+*.pem
+*.key
+*.token
+
+# OVO and Nextflow runtime
+.nextflow/
+.nextflow.log*
+work/
+previews/
+pilots/
+smoke/
+reports/
+results/
+raw/
+inputs/
+reference_files/
+*.trace
+trace.txt
+report.html
+nextflow.log
+nextflow.stdout.log
+
+# Model files and large structures
+*.pt
+*.ckpt
+*.tar
+*.pdb
+*.pdb1
+*.trb

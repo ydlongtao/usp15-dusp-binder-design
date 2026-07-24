@@ -1,0 +1,5 @@
+pool	length_range	contig	model_weights
+USP15_R1_short_base	45-60	A6-134/0 45-60	Complex_base
+USP15_R1_short_beta	45-60	A6-134/0 45-60	Complex_beta
+USP15_R1_long_base	61-80	A6-134/0 61-80	Complex_base
+USP15_R1_long_beta	61-80	A6-134/0 61-80	Complex_beta
