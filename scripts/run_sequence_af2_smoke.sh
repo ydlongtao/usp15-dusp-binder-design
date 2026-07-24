@@ -62,7 +62,7 @@ if [[ "${sequence_done}" == "false" ]]; then
 fi
 
 sequence_pdb_dir="${sequence_dir}/output/batch1/ligandmpnn/standardized_pdb"
-if [[ "$(find "${sequence_pdb_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 3 ]]; then
+if [[ "$(find -L "${sequence_pdb_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 3 ]]; then
     echo "Expected 3 LigandMPNN sequence PDBs in ${sequence_pdb_dir}"
     exit 1
 fi

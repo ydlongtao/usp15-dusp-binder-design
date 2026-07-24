@@ -70,7 +70,7 @@ if [[ "${backbone_done}" == "false" ]]; then
 fi
 
 standardized_dir="${backbone_dir}/output/rfdiffusion/rfdiffusion_standardized_pdb"
-if [[ "$(find "${standardized_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 100 ]]; then
+if [[ "$(find -L "${standardized_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 100 ]]; then
     echo "Expected 100 standardized backbones in ${standardized_dir}"
     exit 1
 fi
