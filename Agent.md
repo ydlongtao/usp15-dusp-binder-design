@@ -195,6 +195,57 @@ re-screen prior candidates with either uncalibrated mode. See
 predictor, recycle/seed change, or replacement acceptance logic requires a new
 explicit authorization.
 
+## Authorized R7 AF2 model/seed ensemble
+
+After R6 failed, the user explicitly authorized continued execution with an AF2
+model/seed ensemble. R7 is documented in
+`docs/USP15_R7_AF2_ENSEMBLE_PLAN.md` and may:
+
+- use OVO's existing `ovo-colabdesign` image and installed AF2 weights without
+  modifying the OVO environment;
+- evaluate pTM models 1–2 and multimer-v3 models 1–5 in `ct` mode;
+- run dropout-enabled seeds 0, 1, and 2 for every model, with exactly three
+  recycles;
+- calibrate first on both the exact-native 6DJ9 control and the 6DJ9 UbV pose
+  on complete 3T9L A6–134;
+- qualify a model only when at least two of three same-numbered seeds pass every
+  unchanged gate on both controls;
+- require independently qualified pTM and multimer models before candidate
+  re-screening.
+
+R7 does not change the target, positive thresholds, off-target thresholds,
+candidate eligibility rules, no-PyRosetta rule, or serial single-V100 policy.
+Single stochastic hits do not qualify a model or candidate.
+
+R7 calibration completed 42/42 records. `model_2_ptm` calibrated for all three
+seeds on both controls, but every multimer-v3 model 1–5 had zero passing seeds.
+Therefore R7 did not meet its two-architecture rule and did not re-screen
+candidates.
+
+## Authorized R8 independent Boltz-2 calibration
+
+The user's authorization covered either an AF2 model/seed ensemble or an
+independently calibrated predictor. After R7's multimer branch failed, R8 may
+use the already installed `ovo-boltz` 2.2.1 image and official MIT-licensed
+Boltz-2 weights:
+
+- use sequence-only protein-complex prediction without a complex template,
+  forced contact, pocket constraint, or inference potential;
+- use the public MSA service only for the already public USP15/UbV controls and
+  in-scope designed sequences;
+- retain three recycles and seeds 0, 1, and 2;
+- compute cross-chain mean PAE, target-aligned binder RMSD, and mean binder
+  pLDDT using the same numerical gates;
+- calibrate first on both exact-native and complete-target 6DJ9 controls;
+- require at least two of three seeds to pass both controls before candidate
+  screening.
+
+Downloading official Boltz-2 weights into a campaign-isolated cache is
+permitted as a normal R8 implementation step. Require the exact official LFS
+byte counts and SHA-256 values recorded in the R8 plan; do not confuse the
+transport `xetHash` with the LFS file hash. Do not use Boltz affinity output as
+a protein-protein acceptance metric.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -252,6 +303,31 @@ explicit authorization.
   summary.
 - `docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md`: exact-native and
   complete-target R6 calibration evidence.
+- `docs/USP15_R7_AF2_ENSEMBLE_PLAN.md`: authorized R7 AF2 model/seed
+  calibration and decision rule.
+- `scripts/run_r7_af2_ensemble_eval.py`: one bounded AF2 architecture/model
+  ensemble evaluator.
+- `scripts/run_r7_calibration.sh`: strictly serial R7 positive-control driver.
+- `scripts/summarize_r7_calibration.py`: R7 control metrics and calibrated-model
+  decision.
+- `scripts/prepare_r7_rescreen_panel.py`: complete-target, no-Cys, hotspot-gated
+  and exact-sequence-unique prior-design panel.
+- `docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md`: independent sequence-only
+  Boltz-2 calibration and candidate decision rules.
+- `scripts/download_one_hf_asset.py`: exact-size and LFS-SHA-256 asset
+  downloader.
+- `scripts/repair_sparse_hf_asset.py`: range-audited sparse asset recovery and
+  full LFS SHA-256 verification.
+- `scripts/prepare_r8_boltz_controls.py`: sequence-only Boltz positive-control
+  YAML generation.
+- `scripts/run_r8_boltz2_calibration.sh`: strictly serial seeds 0–2 Boltz
+  calibration driver.
+- `scripts/summarize_r8_boltz2.py`: independent cross-chain PAE, binder pLDDT,
+  and target-aligned binder RMSD audit.
+- `scripts/run_r8_af2_candidate_screen.sh`: calibrated pTM-model-2 candidate
+  ensemble.
+- `scripts/run_r8_boltz2_candidate_screen.sh`: independent Boltz candidate
+  ensemble for AF2-positive designs.
 
 ## Editing rules
 

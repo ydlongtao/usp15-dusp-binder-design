@@ -122,6 +122,21 @@ binder RMSD 9.83 Å。由于校准器不能恢复阳性对照，未用它重筛�
 - [`docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md`](docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md)
 - [`docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md`](docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md)
 
+R7 随后对 AF2 模型与 dropout seeds 做了有界校准。pTM
+`model_2_ptm` 在精确原生和完整靶标两个阳性对照上均达到 3/3 seeds
+通过，但 multimer-v3 models 1–5 均为 0/3，因此不满足预先规定的
+双架构校准规则，未据此晋级候选：
+
+- [`docs/USP15_R7_AF2_ENSEMBLE_PLAN.md`](docs/USP15_R7_AF2_ENSEMBLE_PLAN.md)
+
+R8 已获授权使用独立 Boltz-2 sequence-only fold-and-dock 进行校准。
+不使用复合物模板、强制接触或推理势；保留 3 recycles、seeds 0–2 和
+原有三项数值门控。只有两个阳性对照至少 2/3 seeds 同时通过，才会按
+“AF2 pTM model 2 先筛、Boltz-2 独立复核”的顺序处理已固定的 52 个
+完整靶标、无 Cys、热点合格且序列去重的候选面板：
+
+- [`docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md`](docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md)
+
 当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
 
 ## 当前计算协议
@@ -137,9 +152,13 @@ binder RMSD 9.83 Å。由于校准器不能恢复阳性对照，未用它重筛�
    - R2 诊断 temperature `0.05` 和 `0.10` 分别运行
    - omit `C`
    - 不设置氨基酸 bias
-4. AF2 `model_1_multimer` target-template、3 recycles 执行 smoke 和主正筛。
-5. 最终候选增加 `model_1_ptm` target-template 与 USP4/USP11 反筛。
-6. 用界面 ΔSASA、碰撞、ProteinQC、ESM-IF、ProteinSol 和序列性质替代 Rosetta 指标。
+4. R1–R5 使用 AF2 `model_1_multimer` target-template、3 recycles；
+   这些历史阴性记录继续保留。
+5. R7/R8 使用已校准的 AF2 `model_2_ptm` ct seeds 0–2，并在 Boltz-2
+   阳性对照校准成功后增加 sequence-only Boltz-2 seeds 0–2 独立复核。
+6. 正向通过者仍必须完成原定 USP4/USP11 的 pTM 与 multimer
+   target-template 反筛，选择性阈值不变。
+7. 用界面 ΔSASA、碰撞、ProteinQC、ESM-IF、ProteinSol 和序列性质替代 Rosetta 指标。
 
 OpenMM 相互作用能和埋藏极性原子检查仅用于排序，不能解释为 Rosetta ddG 或 Rosetta buried-unsatisfied hydrogen bonds。
 
@@ -156,6 +175,7 @@ OpenMM 相互作用能和埋藏极性原子检查仅用于排序，不能解释�
   - `ovo-python-structure`
   - `ovo-ligandmpnn`
   - `ovo-colabdesign`
+  - `ovo-boltz` 2.2.1（仅用于经阳性对照校准的 R8 独立复核）
 
 设置以下环境变量；不要将真实服务器路径写入仓库：
 
