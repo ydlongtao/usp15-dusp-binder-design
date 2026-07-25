@@ -76,6 +76,35 @@ Cys or technical failures. Zero of 120 designs passed all three unchanged AF2
 gates. Treat R2 as non-converged, do not start scaling, and require a newly
 authorized round for any further topology or generation strategy.
 
+## Authorized R3 known-scaffold rescue
+
+The user has authorized continued optimization with the explicit objective of
+obtaining at least three computational candidates, while retaining the USP15
+DUSP target, no-PyRosetta rule, and unchanged gates. R3 is documented in
+`docs/USP15_R3_UBV_RESCUE_PLAN.md` and may:
+
+- use the crystallographic 6DJ9 UbV interface as a diagnostic/scaffold source;
+- use the no-Cys 1UBQ ubiquitin fold as a stable 76-aa scaffold;
+- run bounded RFD1 partial diffusion at `partial_T` 5, 10, and 15 with the
+  target fixed, 10 backbones per condition;
+- require `N_contact_hotspots >= 8` and
+  `N_hotspots_on_interface >= 4`;
+- select at most three backbones per partial-diffusion condition and generate
+  exactly three LigandMPNN sequences per backbone at temperature `0.1`, omit
+  `C`, with no amino-acid bias;
+- use only `af2_model_1_multimer_tt_3rec` for the R3 positive gate.
+
+Wild-type UbV/ubiquitin controls and any diagnostic structures with unresolved
+target residues cannot count as candidates. Candidate status still requires all
+unchanged positive AF2 gates and the original USP4/USP11 selectivity screen.
+
+R3 has now completed 51 technically successful target-template AF2 predictions
+with zero combined-gate passes. The experimental 6DJ9 positive control also
+failed this protocol. Treat R3 as non-converged, do not scale any R3
+distribution, and require explicit user authorization before running binder- or
+interface-template AF2 diagnostics or changing the validation protocol. The
+complete evidence is in `docs/USP15_R3_RESULTS.md`.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -101,6 +130,15 @@ authorized round for any further topology or generation strategy.
 - `scripts/build_r2_phase_c_matrix.py`: build Phase C matrix from passing top-5.
 - `scripts/run_r2_phase_c.sh`: serial LigandMPNN/AF2 Phase C driver.
 - `scripts/summarize_r2_phase_c.py`: unchanged AF2-gate Phase C summary.
+- `docs/USP15_R3_UBV_RESCUE_PLAN.md`: authorized known-scaffold rescue and
+  bounded partial-diffusion plan.
+- `scripts/prepare_r3_ubv_controls.py`: transplant and validate 6DJ9 UbV
+  controls on the complete 3T9L target.
+- `scripts/prepare_r3_ubiquitin_scaffold.py`: place a stable 1UBQ scaffold at
+  the crystallographic interface.
+- `config/r3_partial_diffusion.tsv`: bounded RFD1 partial-diffusion matrix.
+- `scripts/run_r3_partial_diffusion.sh`: serial R3 backbone, sequence, and AF2
+  pilot driver.
 - `scripts/validate_backbones.py`: independent contact validation.
 - `scripts/summarize_backbone_metrics.py`: pilot summary generation.
 

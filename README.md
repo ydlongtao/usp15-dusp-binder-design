@@ -72,6 +72,37 @@ backbone，在 temperature `0.05` 和 `0.10` 下各生成 3 条无 Cys 序列，
 "$USP15_CAMPAIGN_DIR/scripts/run_r2_phase_c.sh"
 ```
 
+R3 已获授权转向 6DJ9 已知结合支架救援，完整决策树记录在
+[`docs/USP15_R3_UBV_RESCUE_PLAN.md`](docs/USP15_R3_UBV_RESCUE_PLAN.md)。
+原始 UbV、全 backbone LigandMPNN 和稳定 1UBQ 界面嫁接的最小 smoke
+均未通过不变的 AF2 门控，因此这些结果不计为候选。当前分支使用 RFD1
+对 3T9L–ubiquitin 复合物做低噪声 partial diffusion：
+
+- `partial_T = 5, 10, 15`，每组 10 个 backbone；
+- target B6–134 固定，binder 固定为 76 aa；
+- 仍要求 `N_contact_hotspots >= 8` 和
+  `N_hotspots_on_interface >= 4`；
+- 每组最多取 3 个 backbone，每个生成 3 条 temperature `0.1`、
+  omit-C 序列；
+- 仍只用 `af2_model_1_multimer_tt_3rec` 做本阶段正向门控。
+
+```bash
+"$USP15_CAMPAIGN_DIR/scripts/run_r3_partial_diffusion.sh"
+```
+
+至少三条正向通过者仍需完成 USP4/USP11 反筛和去冗余，才能成为最终
+计算候选。
+
+R3 已完成并判定未收敛：共 51 条目标模板 AF2 预测技术成功，0 条通过
+三项联合门控。30/30 个 partial-diffusion backbone 虽然通过热点硬过滤，
+但序列预测没有保持目标结合姿态；实验 6DJ9 阳性对照本身也被当前
+`tt_3rec` 协议判为阴性。详细证据与 R4 所需决策见：
+
+- [`docs/USP15_R3_RESULTS.md`](docs/USP15_R3_RESULTS.md)
+
+在获得结构模板诊断或验证协议变更授权前，不继续放大同一分布，也不把
+任何近门控结果标记为候选。
+
 ## 当前计算协议
 
 本版本不使用 PyRosetta：
@@ -222,6 +253,10 @@ done
 | `build_r2_phase_c_matrix.py` | 从每组 top-5 构建序列/AF2 矩阵 |
 | `run_r2_phase_c.sh` | 串行运行 R2 LigandMPNN 与 AF2 |
 | `summarize_r2_phase_c.py` | 汇总固定 AF2 门控与失败原因 |
+| `prepare_r3_ubv_controls.py` | 构建 6DJ9 UbV/3T9L 对照与诊断输入 |
+| `prepare_r3_ubiquitin_scaffold.py` | 将稳定 1UBQ scaffold 放置到已知界面 |
+| `run_r3_partial_diffusion.sh` | 串行执行 RFD1 partial diffusion、硬过滤、LigandMPNN 与 AF2 |
+| `summarize_r3_partial_diffusion.py` | 汇总 R3 不变 AF2 门控 |
 
 ## 输出与可恢复性
 
