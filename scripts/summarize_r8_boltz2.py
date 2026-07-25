@@ -151,7 +151,12 @@ def main() -> None:
     }
     records = []
     for seed in args.seeds:
-        predictions_dir = args.phase_dir / f"seed_{seed}" / "predictions"
+        predictions_dir = (
+            args.phase_dir
+            / f"seed_{seed}"
+            / "boltz_results_input"
+            / "predictions"
+        )
         seed_pass = True
         control_records = []
         for control_id, reference in references.items():

@@ -25,9 +25,10 @@ fi
 
 for seed in 0 1 2; do
     run_dir="${phase_dir}/seed_${seed}"
+    predictions_dir="${run_dir}/boltz_results_$(basename "${input_dir}")/predictions"
     mkdir -p "${run_dir}"
     prediction_count="$(
-        find "${run_dir}/predictions" -type f -name '*_model_0.pdb' 2>/dev/null \
+        find "${predictions_dir}" -type f -name '*_model_0.pdb' 2>/dev/null \
             | wc -l
     )"
     if [[ "${prediction_count}" -ne 2 ]]; then
@@ -53,7 +54,7 @@ for seed in 0 1 2; do
             > "${phase_dir}/seed_${seed}.log" 2>&1
     fi
     prediction_count="$(
-        find "${run_dir}/predictions" -type f -name '*_model_0.pdb' | wc -l
+        find "${predictions_dir}" -type f -name '*_model_0.pdb' | wc -l
     )"
     if [[ "${prediction_count}" -ne 2 ]]; then
         echo "Seed ${seed}: expected two PDB predictions, found ${prediction_count}"

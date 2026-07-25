@@ -11,6 +11,7 @@ input_dir="${phase_dir}/input"
 cache_dir="${R8_BOLTZ_CACHE_DIR:-${ovo_home_dir}/reference_files/boltz_models}"
 seed=0
 run_dir="${phase_dir}/seed_${seed}"
+predictions_dir="${run_dir}/boltz_results_$(basename "${input_dir}")/predictions"
 
 mkdir -p "${input_dir}" "${cache_dir}" "${run_dir}" "${phase_dir}/reports"
 exec 9>"${phase_dir}/r8_boltz2.lock"
@@ -25,7 +26,7 @@ fi
     --output-dir "${input_dir}" \
     --report "${phase_dir}/reports/input_preparation.json"
 
-if [[ "$(find "${run_dir}/predictions" -type f -name '*_model_0.pdb' 2>/dev/null | wc -l)" -ne 2 ]]; then
+if [[ "$(find "${predictions_dir}" -type f -name '*_model_0.pdb' 2>/dev/null | wc -l)" -ne 2 ]]; then
     docker run --rm --gpus all --shm-size 8g \
         -e NUMBA_CACHE_DIR=/tmp \
         -v "${campaign_dir}:${campaign_dir}" \
@@ -48,7 +49,7 @@ if [[ "$(find "${run_dir}/predictions" -type f -name '*_model_0.pdb' 2>/dev/null
         > "${phase_dir}/seed_${seed}.log" 2>&1
 fi
 
-prediction_count="$(find "${run_dir}/predictions" -type f -name '*_model_0.pdb' | wc -l)"
+prediction_count="$(find "${predictions_dir}" -type f -name '*_model_0.pdb' | wc -l)"
 if [[ "${prediction_count}" -ne 2 ]]; then
     echo "Expected two Boltz-2 seed-0 PDB predictions, found ${prediction_count}"
     exit 1

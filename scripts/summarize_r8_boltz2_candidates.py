@@ -31,6 +31,7 @@ def main() -> None:
             prediction_root = (
                 args.phase_dir
                 / f"seed_{seed}"
+                / "boltz_results_input"
                 / "predictions"
                 / candidate["id"]
             )

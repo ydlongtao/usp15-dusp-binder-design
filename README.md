@@ -136,10 +136,12 @@ R8 已获授权使用独立 Boltz-2 sequence-only fold-and-dock 进行校准。
 完整靶标、无 Cys、热点合格且序列去重的候选面板：
 
 - [`docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md`](docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md)
+- [`docs/USP15_R8_BOLTZ2_CALIBRATION_RESULTS.md`](docs/USP15_R8_BOLTZ2_CALIBRATION_RESULTS.md)
 
-服务器端可使用 `scripts/run_r8_pipeline_queue.sh` 持续执行资产哈希验收、
-seed-0 smoke、seeds 1–2 校准和 AF2→Boltz 串行正筛。脚本在任何固定门控
-失败时停止，不会自动进入反筛或放宽阈值。
+R8 seed-0 已技术完成，但两个阳性对照的 target-aligned binder RMSD
+分别为 48.444 Å 和 48.481 Å，因此均未通过不变的 2 Å 门控。队列按计划
+停止，没有运行 seeds 1–2、52 成员正筛或 USP4/USP11 反筛，也没有放宽
+阈值。
 
 当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
 
