@@ -111,6 +111,17 @@ binder 都偏离设计界面。完整参数、指标和当前验证协议阻塞�
 - [`docs/USP15_R5_AFDESIGN_PLAN.md`](docs/USP15_R5_AFDESIGN_PLAN.md)
 - [`docs/USP15_R4_R5_RESULTS.md`](docs/USP15_R4_R5_RESULTS.md)
 
+R6 获授权校准 OVO 的 binder-template (`tbt`) 和 interface-template
+(`ct`) 模式。精确 6DJ9 原生复合物与“6DJ9 UbV 姿势 + 完整 3T9L
+靶点”两个阳性对照均完成 model 1 pTM/multimer、3 recycles 的四项
+测试，但没有一种模式同时通过未改变的三项门控。最佳
+complete-target pTM+ct 记录为 iPAE 9.62、binder pLDDT 87.30、
+binder RMSD 9.83 Å。由于校准器不能恢复阳性对照，未用它重筛或晋级
+旧设计：
+
+- [`docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md`](docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md)
+- [`docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md`](docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md)
+
 当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
 
 ## 当前计算协议

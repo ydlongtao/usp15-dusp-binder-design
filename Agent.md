@@ -161,6 +161,40 @@ near-threshold candidate. See `docs/USP15_R4_R5_RESULTS.md`. Any binder-template
 diagnostic, alternate predictor, or validation-decision change requires explicit
 user authorization.
 
+## Authorized R6 AF2 template calibration
+
+The user has explicitly authorized validation-level calibration and execution
+toward at least three computational candidates after the original target-template
+test failed to recover the exact 6DJ9 native complex. R6 is documented in
+`docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md` and may:
+
+- calibrate OVO binder-template (`tbt`) and complex/interface-template (`ct`)
+  modes on the exact native 6DJ9 complex using model 1 pTM and model 1 multimer,
+  each with three recycles;
+- keep iPAE <= 10, target-aligned binder RMSD <= 2 Å, and binder pLDDT >= 80
+  unchanged;
+- select the least geometry-conditioned mode whose pTM and multimer tests both
+  recover the positive control, preferring `tbt` over `ct`;
+- use the calibrated mode to re-evaluate complete-target, no-Cys, 45–80-aa
+  designs from prior authorized rounds;
+- retain the original target-template pTM and multimer tests for the USP4/USP11
+  off-target screen.
+
+The native 6DJ9 positive control and any structure with an incomplete target
+remain ineligible as candidates. If only `ct` calibrates, final results must be
+reported as geometry-conditioned computational candidates rather than independent
+fold-and-dock validation. GPU-heavy tests remain strictly serial.
+
+R6 calibration has completed. Neither `tbt` nor `ct` passed all three unchanged
+gates for both model 1 pTM and model 1 multimer on the exact-native 6DJ9
+positive control. The permitted complete-3T9L-target follow-up also failed. The
+best record was complete-target pTM+ct (iPAE 9.62, binder pLDDT 87.30, binder
+RMSD 9.83 Å); model 1 multimer+ct remained a wrong-pose prediction. Do not
+re-screen prior candidates with either uncalibrated mode. See
+`docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md`. Any model ensemble, alternate
+predictor, recycle/seed change, or replacement acceptance logic requires a new
+explicit authorization.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -210,6 +244,14 @@ user authorization.
   independent validation-model reservation and machine-readable audit.
 - `scripts/summarize_r5_afdesign.py`: machine-readable R5 OVO gate summary.
 - `docs/USP15_R4_R5_RESULTS.md`: complete R4/R5 metrics and validation blocker.
+- `docs/USP15_R6_TEMPLATE_CALIBRATION_PLAN.md`: authorized template calibration
+  and unchanged decision rules.
+- `scripts/run_r6_template_calibration.sh`: strictly serial R6 calibration
+  driver.
+- `scripts/summarize_r6_template_calibration.py`: machine-readable R6 gate
+  summary.
+- `docs/USP15_R6_TEMPLATE_CALIBRATION_RESULTS.md`: exact-native and
+  complete-target R6 calibration evidence.
 
 ## Editing rules
 
