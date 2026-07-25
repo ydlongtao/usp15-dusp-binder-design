@@ -12,6 +12,13 @@ as an independent sequence-only fold-and-dock validator.
 The server image is Boltz 2.2.1. Official weights are stored only in a
 campaign-isolated runtime cache and are not committed.
 
+The original server image contained PyTorch 2.11/cu130, whose wheel omitted
+CUDA `sm_70` kernels and therefore could not execute on the V100. The derived
+`ovo-boltz-v100:2.2.1` image retains the same Boltz source and model weights but
+pins the official PyTorch 2.5.1/cu121 wheel, which satisfies Boltz's
+`torch>=2.2` requirement and supports V100. The image must pass a real GPU
+tensor smoke before restarting R8 inference.
+
 Asset integrity is checked against the official Hugging Face LFS metadata:
 
 - `mols.tar`: 1,855,662,080 bytes, SHA-256

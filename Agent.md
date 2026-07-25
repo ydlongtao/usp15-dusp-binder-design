@@ -330,6 +330,8 @@ a protein-protein acceptance metric.
   ensemble for AF2-positive designs.
 - `scripts/run_r8_pipeline_queue.sh`: persistent asset verification, seed-0
   smoke, seeds 1–2 calibration, and serial AF2-to-Boltz positive-screen queue.
+- `docker/boltz-v100.Dockerfile`: same Boltz 2.2.1 runtime with an official
+  PyTorch/cu121 wheel that retains V100 `sm_70` support.
 
 ## Editing rules
 
