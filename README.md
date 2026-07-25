@@ -24,7 +24,23 @@ R1 的四个 100-backbone pilot 已完成，但首轮 Complex_base LigandMPNN + 
 
 - [`docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md`](docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md)
 
-该文档当前为 R2 待执行计划。实施前必须建立独立 R2 配置并更新 `Agent.md`；不得覆盖 R1 参数和失败记录。
+R2 阶段 A 已完成：18/18 条 LigandMPNN + AF2 设计技术成功，但
+0/18 通过既定 AF2 门控，且没有启动扩量。完整执行结果与阶段 B
+停止条件已写回优化计划；不得覆盖 R1 参数和失败记录。
+
+阶段 A 获得授权后，可使用独立矩阵执行已有 Complex_beta 候选的 18 条序列诊断：
+
+```bash
+cp config/r2_phase_a.tsv "$USP15_CAMPAIGN_DIR/config/"
+cp scripts/run_r2_phase_a.sh scripts/summarize_r2_phase_a.py \
+  "$USP15_CAMPAIGN_DIR/scripts/"
+
+"$USP15_CAMPAIGN_DIR/scripts/run_r2_phase_a.sh"
+```
+
+脚本严格串行运行 6 个条件，输出
+`r2/phase_a/reports/af2_metrics.csv` 和
+`r2/phase_a/reports/phase_a_summary.json`，并明确禁止自动启动扩量。
 
 ## 当前计算协议
 

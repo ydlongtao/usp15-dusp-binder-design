@@ -27,6 +27,26 @@ Maintain and execute the USP15 DUSP minibinder design workflow reproducibly. The
 - AF2 positive thresholds are iPAE ≤ 10, target-aligned binder RMSD ≤ 2 Å, and binder pLDDT ≥ 80.
 - OpenMM energy and buried-polar diagnostics are ranking features, not Rosetta-equivalent metrics.
 
+## Authorized R2 Phase A diagnostic
+
+R1 remains immutable. The user has authorized the documented R2 Phase A diagnostic in
+`docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md`:
+
+- Test exactly these existing Complex_beta backbones:
+  - `USP15_R1_short_beta/rfdiffusion_55_standardized.pdb`
+  - `USP15_R1_short_beta/rfdiffusion_75_standardized.pdb`
+  - `USP15_R1_long_beta/rfdiffusion_76_standardized.pdb`
+- For each backbone, generate exactly 3 LigandMPNN sequences at temperature `0.05`
+  and exactly 3 at temperature `0.10`.
+- Omit `C` and use no amino-acid bias.
+- Run `af2_model_1_multimer_tt_3rec` for all 18 sequences.
+- Preserve the R1 AF2 thresholds without modification.
+- Do not start scaling automatically. Record a machine-readable summary and stop for
+  review whether Phase A passes or fails.
+
+This authorization applies only to R2 Phase A. It does not change the R1 temperature
+or candidate-selection invariants.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -37,6 +57,8 @@ Maintain and execute the USP15 DUSP minibinder design workflow reproducibly. The
 - `scripts/run_pilot_queue.sh`: serial pilot queue.
 - `scripts/run_sequence_af2_smoke.sh`: LigandMPNN and AF2 smoke.
 - `scripts/run_smoke_after_pilots.sh`: post-pilot gate.
+- `scripts/run_r2_phase_a.sh`: serial R2 Phase A LigandMPNN and AF2 driver.
+- `scripts/summarize_r2_phase_a.py`: machine-readable R2 Phase A AF2 gate summary.
 - `scripts/validate_backbones.py`: independent contact validation.
 - `scripts/summarize_backbone_metrics.py`: pilot summary generation.
 

@@ -1,8 +1,8 @@
-# USP15 DUSP 参数优化计划（R2，待执行）
+# USP15 DUSP 参数优化计划（R2）
 
 记录日期：2026-07-25
 
-状态：**计划已记录，尚未启用或启动计算。**
+状态：**阶段 A 已于 2026-07-25 完成且未通过 AF2 门控；阶段 B 尚未启动。**
 
 本文件记录 `USP15_DUSP_R1` 未通过 AlphaFold2 smoke gate 后的参数优化方案，供后续恢复计算时直接复用。R2 保持 USP15 DUSP 靶点、输入结构和最终验收阈值不变，不通过放宽门控来制造“合格”结果。
 
@@ -83,6 +83,27 @@ LigandMPNN 和 `af2_model_1_multimer_tt_3rec` 技术流程运行成功，每个�
 - 不用“接近通过”替代正式通过。
 
 temperature `0.05` 是 R2 的诊断变量，不覆盖 R1 的 temperature `0.1` 记录。实施前应在 R2 配置和 Agent 指令中显式登记。
+
+### 3.1 阶段 A 执行记录
+
+阶段 A 已按上述矩阵完成：
+
+- 6/6 个 LigandMPNN 条件技术成功；
+- 18/18 条预期序列已生成；
+- 所有 binder 序列均无 Cys；
+- 18/18 条序列的 `af2_model_1_multimer_tt_3rec` 技术成功；
+- 0/18 条序列完整通过三项 AF2 门控；
+- 未启动任何扩量任务。
+
+最佳单项指标分别为：
+
+| 指标 | 最佳值 | 对应要求 |
+|---|---:|---:|
+| iPAE | 25.06 | `<=10` |
+| target-aligned binder RMSD | 24.97 Å | `<=2 Å` |
+| binder pLDDT | 57.49 | `>=80` |
+
+这些最佳值来自不同或部分不同设计，不能组合成一个候选。由于所有结果与正式门控仍有很大距离，阶段 A 的结论为 `af2_gate_failed`。下一步只能在复核链映射和 target-template 对齐后，另行授权阶段 B；不得从阶段 A 自动扩量。
 
 ## 4. 阶段 B：新 RFdiffusion 小矩阵
 
@@ -186,15 +207,15 @@ Rg 和二级结构阈值属于 R2 新增硬过滤，不替代原热点门控。�
 
 ## 8. 实施前检查清单
 
-- [ ] 确认 R1 没有活动的扩量任务。
+- [x] 确认 R1 没有活动的扩量任务。
 - [ ] 手工复核 AF2 输入与输出的 binder A / target B 链映射。
 - [ ] 确认 target-template 对齐正确，排除指标计算错误。
 - [ ] 为 R2 建立独立 Round 和输出目录，不覆盖 R1。
-- [ ] 在 `config/` 中新增 R2 配置，不修改 R1 结果。
-- [ ] 更新 `Agent.md`，明确 R2 允许的生成热点子集和 temperature 诊断矩阵。
-- [ ] 验证 Complex_beta 和 scaffold-guided 参数的单设计 smoke。
-- [ ] 记录 LigandMPNN 每 backbone 的实际序列数、temperature 和 Cys 数量。
-- [ ] AF2 smoke 完整通过前不创建或启动 1000-backbone 队列。
+- [x] 在 `config/` 中新增阶段 A 配置，不修改 R1 结果。
+- [x] 更新 `Agent.md`，明确阶段 A 的 temperature 诊断矩阵。
+- [x] 验证 Complex_beta 阶段 A smoke。
+- [x] 记录 LigandMPNN 每 backbone 的实际序列数、temperature 和 Cys 数量。
+- [x] AF2 smoke 完整通过前不创建或启动 1000-backbone 队列。
 
 ## 9. 参考资料
 
