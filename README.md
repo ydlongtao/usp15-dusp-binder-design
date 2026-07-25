@@ -103,6 +103,16 @@ R3 已完成并判定未收敛：共 51 条目标模板 AF2 预测技术成功�
 在获得结构模板诊断或验证协议变更授权前，不继续放大同一分布，也不把
 任何近门控结果标记为候选。
 
+R4/R5 随后完成了 6DJ9 四个独立晶体构象集和 AFDesign 定向序列优化。
+R4 12/12、R5 4/4 技术成功，但仍均为 0 条联合通过；所有失败预测的
+binder 都偏离设计界面。完整参数、指标和当前验证协议阻塞见：
+
+- [`docs/USP15_R4_POSE_ENSEMBLE_PLAN.md`](docs/USP15_R4_POSE_ENSEMBLE_PLAN.md)
+- [`docs/USP15_R5_AFDESIGN_PLAN.md`](docs/USP15_R5_AFDESIGN_PLAN.md)
+- [`docs/USP15_R4_R5_RESULTS.md`](docs/USP15_R4_R5_RESULTS.md)
+
+当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
+
 ## 当前计算协议
 
 本版本不使用 PyRosetta：

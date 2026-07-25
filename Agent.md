@@ -105,6 +105,62 @@ distribution, and require explicit user authorization before running binder- or
 interface-template AF2 diagnostics or changing the validation protocol. The
 complete evidence is in `docs/USP15_R3_RESULTS.md`.
 
+## Authorized R4 crystallographic-pose ensemble
+
+The user has explicitly asked to continue optimization until at least three
+computational peptide candidates are obtained while retaining all prior target,
+no-PyRosetta, and AF2/selectivity constraints. R4 is documented in
+`docs/USP15_R4_POSE_ENSEMBLE_PLAN.md` and may:
+
+- transplant the four directly resolved 6DJ9 target/binder pairs A–K, B–L,
+  C–J, and D–H onto complete 3T9L chain A residues 6–134;
+- apply only the smallest deterministic three-dimensional de-clashing
+  translation that leaves zero interchain atom pairs below 2 Å and at least
+  four hotspots within 5 Å;
+- preserve the 15 crystallographic interface positions listed in the plan;
+- generate exactly three ProteinMPNN sequences per pose at temperature `0.1`,
+  omit `C`, with no amino-acid bias;
+- run only `af2_model_1_multimer_tt_3rec` and keep every positive gate
+  unchanged.
+
+If at least three sequences pass all positive gates, proceed immediately to the
+original USP4/USP11 selectivity screen. If none passes, stop this bounded
+ensemble branch rather than scaling it or relaxing a gate.
+
+## Authorized R5 AFDesign sequence optimization
+
+R4 completed with zero positive-gate passes. The user's continuing instruction
+to obtain at least three candidates authorizes the bounded R5 sequence-only
+optimization in `docs/USP15_R5_AFDESIGN_PLAN.md`:
+
+- use the existing OVO `ovo-colabdesign` image; do not modify the OVO Python
+  environment or download another AF2 weight set;
+- optimize only the R3 P10 rank-1 RFD1 complex, which is the historical
+  near-gate design;
+- use multimer model 3 and model 4 during AFDesign and reserve multimer model 1
+  for the unchanged OVO target-template validation;
+- remove Cys and retain the complete target and all six hotspots;
+- run one bounded low-iteration smoke before three full AFDesign seeds;
+- keep all GPU work serial.
+
+If model 3/4 cannot form the hotspot interface, R5 may run one 20-soft-step
+model-1-in-the-loop diagnostic without a binder coordinate or sequence
+template. It must be labeled as circular design/validation evidence, may not
+count from internal loss, and may only advance through the unchanged OVO
+positive and selectivity gates.
+
+AFDesign internal losses are not acceptance gates. Only the unchanged
+`af2_model_1_multimer_tt_3rec` metrics and the original USP4/USP11 screen may
+promote a final candidate.
+
+R4 and R5 are now complete. R4 produced 12/12 technically valid AF2 records and
+R5 produced 4/4; both had zero combined-gate passes. Do not scale either
+distribution. The cumulative failure, including the crystallographic 6DJ9
+positive control, indicates a validation-protocol blocker rather than a
+near-threshold candidate. See `docs/USP15_R4_R5_RESULTS.md`. Any binder-template
+diagnostic, alternate predictor, or validation-decision change requires explicit
+user authorization.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -141,6 +197,19 @@ complete evidence is in `docs/USP15_R3_RESULTS.md`.
   pilot driver.
 - `scripts/validate_backbones.py`: independent contact validation.
 - `scripts/summarize_backbone_metrics.py`: pilot summary generation.
+- `docs/USP15_R4_POSE_ENSEMBLE_PLAN.md`: authorized four-pose experimental
+  interface ensemble and decision rules.
+- `scripts/prepare_r4_6dj9_pose_ensemble.py`: transplant, de-clash, and audit
+  four independent 6DJ9 poses.
+- `scripts/validate_r4_pose_sequences.py`: enforce R4 sequence counts,
+  no-Cys, uniqueness, and fixed-interface invariants.
+- `scripts/run_r4_pose_ensemble.sh`: serial ProteinMPNN and AF2 R4 driver.
+- `docs/USP15_R5_AFDESIGN_PLAN.md`: bounded AFDesign sequence-only rescue on
+  the best RFD1 near-gate complex.
+- `scripts/run_r5_afdesign_one.py`: one deterministic AFDesign seed with
+  independent validation-model reservation and machine-readable audit.
+- `scripts/summarize_r5_afdesign.py`: machine-readable R5 OVO gate summary.
+- `docs/USP15_R4_R5_RESULTS.md`: complete R4/R5 metrics and validation blocker.
 
 ## Editing rules
 
