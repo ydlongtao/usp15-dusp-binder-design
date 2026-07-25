@@ -51,6 +51,13 @@ R2 阶段 B 使用 [`config/r2_phase_b.tsv`](config/r2_phase_b.tsv) 的六条件
 条件使用 RFdiffusion 官方无-contig调用，再把原始 TRB 复制并规范化为 OVO
 可读取的元数据。原始 TRB 和两次失败 smoke 都保留，不修改坐标。
 
+R2 阶段 B/C 已全部完成。300 个 backbone 中有 20 个进入序列设计：
+`B1=0, B2=3, B3=3, B4=4, S1=5, S2=5`。40 个 LigandMPNN 条件均
+技术成功，共生成 120 条无 Cys 序列；120/120 条
+`af2_model_1_multimer_tt_3rec` 预测完成，但 0/120 同时通过 iPAE、
+target-aligned binder RMSD 和 binder pLDDT 门控。本轮状态为
+`af2_gate_failed`，没有启动 1000-backbone 扩量，也没有放宽阈值。
+
 ```bash
 "$USP15_CAMPAIGN_DIR/scripts/install_rfdiffusion_scaffold_checkpoint.sh"
 "$USP15_CAMPAIGN_DIR/scripts/prepare_r2_phase_b_resources.sh"

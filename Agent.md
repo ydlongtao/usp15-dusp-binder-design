@@ -70,6 +70,12 @@ documented R2 Phase B/C matrix:
 - Keep all GPU-heavy stages serial and do not initiate 1000-backbone scaling
   unless at least one Phase C sequence passes every unchanged AF2 gate.
 
+R2 Phase B/C has now completed. The 300-backbone matrix yielded 20 selected
+backbones, and all 120 expected LigandMPNN/AF2 designs completed without binder
+Cys or technical failures. Zero of 120 designs passed all three unchanged AF2
+gates. Treat R2 as non-converged, do not start scaling, and require a newly
+authorized round for any further topology or generation strategy.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
