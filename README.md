@@ -137,6 +137,10 @@ R8 已获授权使用独立 Boltz-2 sequence-only fold-and-dock 进行校准。
 
 - [`docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md`](docs/USP15_R8_BOLTZ2_CALIBRATION_PLAN.md)
 
+服务器端可使用 `scripts/run_r8_pipeline_queue.sh` 持续执行资产哈希验收、
+seed-0 smoke、seeds 1–2 校准和 AF2→Boltz 串行正筛。脚本在任何固定门控
+失败时停止，不会自动进入反筛或放宽阈值。
+
 当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
 
 ## 当前计算协议

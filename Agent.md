@@ -328,6 +328,8 @@ a protein-protein acceptance metric.
   ensemble.
 - `scripts/run_r8_boltz2_candidate_screen.sh`: independent Boltz candidate
   ensemble for AF2-positive designs.
+- `scripts/run_r8_pipeline_queue.sh`: persistent asset verification, seed-0
+  smoke, seeds 1–2 calibration, and serial AF2-to-Boltz positive-screen queue.
 
 ## Editing rules
 
