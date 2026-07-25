@@ -47,6 +47,29 @@ R1 remains immutable. The user has authorized the documented R2 Phase A diagnost
 This authorization applies only to R2 Phase A. It does not change the R1 temperature
 or candidate-selection invariants.
 
+## Authorized R2 Phase B/C optimization
+
+Phase A chain/template alignment audit passed for all 18 predictions and Phase A
+failed the unchanged AF2 gates. The user subsequently authorized execution of the
+documented R2 Phase B/C matrix:
+
+- Run exactly B1, B2, B3, B4, S1, and S2 from `config/r2_phase_b.tsv`, 50
+  backbones per condition.
+- Evaluate all conditions with the full six target hotspots and preserve
+  `N_contact_hotspots >= 8` plus `N_hotspots_on_interface >= 4`.
+- Apply the compactness, topology, loop, and contact-density thresholds recorded
+  in `docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md`.
+- Use the official RFD1 `Complex_Fold_base_ckpt.pt` only for scaffold-guided
+  S1/S2. Do not substitute `Complex_base` when the scaffold checkpoint is absent.
+- OVO's binder pipeline cannot represent the official auto-contig scaffold PPI
+  call. S1/S2 may therefore run via direct Docker CLI, with raw TRB files
+  preserved and OVO-compatible metadata copies generated for standardization.
+- Select at most five passing backbones per condition. For each selected
+  backbone, generate three sequences at temperature `0.05` and three at `0.10`,
+  omit `C`, and run only `af2_model_1_multimer_tt_3rec`.
+- Keep all GPU-heavy stages serial and do not initiate 1000-backbone scaling
+  unless at least one Phase C sequence passes every unchanged AF2 gate.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -59,6 +82,19 @@ or candidate-selection invariants.
 - `scripts/run_smoke_after_pilots.sh`: post-pilot gate.
 - `scripts/run_r2_phase_a.sh`: serial R2 Phase A LigandMPNN and AF2 driver.
 - `scripts/summarize_r2_phase_a.py`: machine-readable R2 Phase A AF2 gate summary.
+- `config/r2_phase_b.tsv`: authorized six-condition R2 backbone matrix.
+- `scripts/audit_r2_phase_a_alignment.py`: independent Phase A chain/RMSD audit.
+- `scripts/install_rfdiffusion_scaffold_checkpoint.sh`: verified official scaffold
+  model installer.
+- `scripts/prepare_r2_phase_b_resources.sh`: PyRosetta-free scaffold resource
+  preparation.
+- `scripts/run_r2_phase_b_backbones.sh`: one-condition R2 backbone and filter
+  driver.
+- `scripts/run_r2_phase_b_queue.sh`: serial six-condition Phase B queue.
+- `scripts/normalize_scaffold_trb.py`: audited scaffold TRB metadata normalization.
+- `scripts/build_r2_phase_c_matrix.py`: build Phase C matrix from passing top-5.
+- `scripts/run_r2_phase_c.sh`: serial LigandMPNN/AF2 Phase C driver.
+- `scripts/summarize_r2_phase_c.py`: unchanged AF2-gate Phase C summary.
 - `scripts/validate_backbones.py`: independent contact validation.
 - `scripts/summarize_backbone_metrics.py`: pilot summary generation.
 

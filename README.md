@@ -28,6 +28,10 @@ R2 阶段 A 已完成：18/18 条 LigandMPNN + AF2 设计技术成功，但
 0/18 通过既定 AF2 门控，且没有启动扩量。完整执行结果与阶段 B
 停止条件已写回优化计划；不得覆盖 R1 参数和失败记录。
 
+阶段 A 的独立链映射审计也已通过：18/18 个预测均保持 binder A /
+target B，target CA RMSD 为 0.733–0.788 Å，独立复算的 binder RMSD
+与 OVO 指标一致。因此阶段 A 的失败不是链号或 target-template 配置错误。
+
 阶段 A 获得授权后，可使用独立矩阵执行已有 Complex_beta 候选的 18 条序列诊断：
 
 ```bash
@@ -42,6 +46,25 @@ cp scripts/run_r2_phase_a.sh scripts/summarize_r2_phase_a.py \
 `r2/phase_a/reports/af2_metrics.csv` 和
 `r2/phase_a/reports/phase_a_summary.json`，并明确禁止自动启动扩量。
 
+R2 阶段 B 使用 [`config/r2_phase_b.tsv`](config/r2_phase_b.tsv) 的六条件、
+每条件 50-backbone 矩阵。标准条件继续走 OVO Nextflow；scaffold-guided
+条件使用 RFdiffusion 官方无-contig调用，再把原始 TRB 复制并规范化为 OVO
+可读取的元数据。原始 TRB 和两次失败 smoke 都保留，不修改坐标。
+
+```bash
+"$USP15_CAMPAIGN_DIR/scripts/install_rfdiffusion_scaffold_checkpoint.sh"
+"$USP15_CAMPAIGN_DIR/scripts/prepare_r2_phase_b_resources.sh"
+"$USP15_CAMPAIGN_DIR/scripts/run_r2_phase_b_queue.sh"
+```
+
+六组 backbone 全部完成后，Phase C 自动从每组过滤结果中取最多 5 个
+backbone，在 temperature `0.05` 和 `0.10` 下各生成 3 条无 Cys 序列，
+并仅运行 `af2_model_1_multimer_tt_3rec`：
+
+```bash
+"$USP15_CAMPAIGN_DIR/scripts/run_r2_phase_c.sh"
+```
+
 ## 当前计算协议
 
 本版本不使用 PyRosetta：
@@ -50,8 +73,9 @@ cp scripts/run_r2_phase_a.sh scripts/summarize_r2_phase_a.py \
 2. OVO backbone metrics 执行硬过滤：
    - `N_contact_hotspots >= 8`
    - `N_hotspots_on_interface >= 4`
-3. LigandMPNN 使用 ProteinMPNN weights，每个 backbone 生成 3 条序列：
-   - temperature `0.1`
+3. LigandMPNN 使用 ProteinMPNN weights，每个 R1 backbone 生成 3 条序列：
+   - R1 temperature `0.1`
+   - R2 诊断 temperature `0.05` 和 `0.10` 分别运行
    - omit `C`
    - 不设置氨基酸 bias
 4. AF2 `model_1_multimer` target-template、3 recycles 执行 smoke 和主正筛。
@@ -182,6 +206,15 @@ done
 | `run_pilot_queue.sh` | 将剩余 pilot 串行排队 |
 | `run_sequence_af2_smoke.sh` | 运行 LigandMPNN 3-sequence + AF2 smoke |
 | `run_smoke_after_pilots.sh` | pilot 完成后的自动门控 |
+| `audit_r2_phase_a_alignment.py` | 独立复算 Phase A 链映射与 RMSD |
+| `prepare_r2_phase_b_resources.sh` | 无 PyRosetta 准备 scaffold/target SS 与邻接矩阵 |
+| `install_rfdiffusion_scaffold_checkpoint.sh` | 下载并校验官方 scaffold checkpoint |
+| `run_r2_phase_b_backbones.sh` | 运行一个 R2 backbone 条件及固定过滤 |
+| `run_r2_phase_b_queue.sh` | 串行运行六个 50-backbone 条件 |
+| `normalize_scaffold_trb.py` | 保留原始 TRB 并生成 OVO 兼容副本 |
+| `build_r2_phase_c_matrix.py` | 从每组 top-5 构建序列/AF2 矩阵 |
+| `run_r2_phase_c.sh` | 串行运行 R2 LigandMPNN 与 AF2 |
+| `summarize_r2_phase_c.py` | 汇总固定 AF2 门控与失败原因 |
 
 ## 输出与可恢复性
 

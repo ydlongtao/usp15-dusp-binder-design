@@ -2,7 +2,8 @@
 
 记录日期：2026-07-25
 
-状态：**阶段 A 已于 2026-07-25 完成且未通过 AF2 门控；阶段 B 尚未启动。**
+状态：**阶段 A 已完成且未通过 AF2 门控；阶段 A 对齐审计通过；阶段 B 已于
+2026-07-25 启动。**
 
 本文件记录 `USP15_DUSP_R1` 未通过 AlphaFold2 smoke gate 后的参数优化方案，供后续恢复计算时直接复用。R2 保持 USP15 DUSP 靶点、输入结构和最终验收阈值不变，不通过放宽门控来制造“合格”结果。
 
@@ -105,6 +106,20 @@ temperature `0.05` 是 R2 的诊断变量，不覆盖 R1 的 temperature `0.1` �
 
 这些最佳值来自不同或部分不同设计，不能组合成一个候选。由于所有结果与正式门控仍有很大距离，阶段 A 的结论为 `af2_gate_failed`。下一步只能在复核链映射和 target-template 对齐后，另行授权阶段 B；不得从阶段 A 自动扩量。
 
+### 3.2 阶段 A 对齐审计
+
+阶段 B 启动前对全部 18 个 Phase A 预测进行独立 Kabsch 复算：
+
+- 18/18 保持 binder chain A / target chain B；
+- 输入与预测的 target 序列均与 3T9L A6–134 一致；
+- target chain CA RMSD 范围为 0.733–0.788 Å；
+- 独立复算的 target-aligned binder RMSD 与 OVO 报告最大差值为
+  0.00011 Å。
+
+因此 Phase A 的高 binder RMSD 是模型结果，不是链映射、残基重编号或
+target-template 对齐错误。审计报告输出到
+`r2/phase_a/reports/alignment_audit.{csv,json}`。
+
 ## 4. 阶段 B：新 RFdiffusion 小矩阵
 
 不直接生成数千个 backbone。先运行 6 个条件，每个 50 个 backbone，共 300 个。
@@ -138,6 +153,31 @@ temperature `0.05` 是 R2 的诊断变量，不覆盖 R1 的 temperature `0.1` �
 - 不使用 PyRosetta
 
 S1/S2 的目的不是增加普通 Complex_base 样本，而是用 fold/scaffold conditioning 约束紧凑的三螺旋束或其他可折叠拓扑，避免再次得到连续单螺旋。实施前必须先确认当前 RFD1 镜像中 scaffold-guided PPI 所需文件和参数可用；验证失败时不得静默改用其他模型。
+
+### 4.3 阶段 B 技术 smoke 与实施记录
+
+正式 300-backbone 队列启动前完成了两个单设计 smoke：
+
+- B1 `Complex_beta`：RFdiffusion、标准化、backbone metrics 和附加过滤
+  全部技术成功；
+- S1 scaffold-guided：官方 `Complex_Fold_base_ckpt.pt`、直接 RFdiffusion
+  CLI、TRB 规范化、OVO 标准化和 metrics 全部技术成功。
+
+S1 的两次失败尝试均保留。首次发现服务器缺少官方
+`Complex_Fold_base_ckpt.pt`；第二次确认 OVO binder Nextflow 同时传入
+普通 contig 与 scaffold target 会触发 RFdiffusion 断言。修复方式没有
+替换模型或改变阈值：
+
+1. 从 RFdiffusion 官方地址补齐并校验
+   `Complex_Fold_base_ckpt.pt`；
+2. S1/S2 使用官方示例的 auto-contig target/scaffold 调用；
+3. 保留原始 TRB，只在副本中把 `sampled_mask` 写入 OVO 标准化器期望的
+   `config.contigmap.contigs`，并记录 `coordinates_modified=false`。
+
+资源准备明确检测不到 PyRosetta，使用 RFdiffusion helper 的近似 SSE
+路径。官方 scaffold 子集中，S1 可用 1000 对、长度 50–65；S2 可用
+164 对、实际长度 60–65。S2 仍记录计划接受区间 60–75，不虚构不存在的
+66–75 aa scaffold。
 
 ## 5. R2 backbone 过滤
 
@@ -208,14 +248,16 @@ Rg 和二级结构阈值属于 R2 新增硬过滤，不替代原热点门控。�
 ## 8. 实施前检查清单
 
 - [x] 确认 R1 没有活动的扩量任务。
-- [ ] 手工复核 AF2 输入与输出的 binder A / target B 链映射。
-- [ ] 确认 target-template 对齐正确，排除指标计算错误。
-- [ ] 为 R2 建立独立 Round 和输出目录，不覆盖 R1。
+- [x] 手工及脚本复核 AF2 输入与输出的 binder A / target B 链映射。
+- [x] 确认 target-template 对齐正确，排除指标计算错误。
+- [x] 为 R2 建立独立 Round 和输出目录，不覆盖 R1。
 - [x] 在 `config/` 中新增阶段 A 配置，不修改 R1 结果。
 - [x] 更新 `Agent.md`，明确阶段 A 的 temperature 诊断矩阵。
 - [x] 验证 Complex_beta 阶段 A smoke。
 - [x] 记录 LigandMPNN 每 backbone 的实际序列数、temperature 和 Cys 数量。
 - [x] AF2 smoke 完整通过前不创建或启动 1000-backbone 队列。
+- [x] B1 和 S1 单设计技术 smoke 成功。
+- [x] 启动六条件各 50-backbone 的串行 Phase B 队列。
 
 ## 9. 参考资料
 
