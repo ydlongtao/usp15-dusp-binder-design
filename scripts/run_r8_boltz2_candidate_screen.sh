@@ -54,7 +54,7 @@ for seed in 0 1 2; do
             | wc -l
     )"
     if [[ "${prediction_count}" -ne "${expected_inputs}" ]]; then
-        docker run --rm --gpus all \
+        docker run --rm --gpus all --shm-size 8g \
             -e NUMBA_CACHE_DIR=/tmp \
             -v "${campaign_dir}:${campaign_dir}" \
             -v "${ovo_home_dir}:${ovo_home_dir}" \

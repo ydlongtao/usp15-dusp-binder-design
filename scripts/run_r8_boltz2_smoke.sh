@@ -26,7 +26,7 @@ fi
     --report "${phase_dir}/reports/input_preparation.json"
 
 if [[ "$(find "${run_dir}/predictions" -type f -name '*_model_0.pdb' 2>/dev/null | wc -l)" -ne 2 ]]; then
-    docker run --rm --gpus all \
+    docker run --rm --gpus all --shm-size 8g \
         -e NUMBA_CACHE_DIR=/tmp \
         -v "${campaign_dir}:${campaign_dir}" \
         -v "${ovo_home_dir}:${ovo_home_dir}" \
