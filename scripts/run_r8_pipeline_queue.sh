@@ -8,9 +8,10 @@ python_bin="${PYTHON_BIN:-${ovo_env_dir}/bin/python}"
 r8_dir="${campaign_dir}/r8"
 report_dir="${r8_dir}/boltz2_calibration/reports"
 verified_asset_dir="${R8_VERIFIED_ASSET_DIR:-${r8_dir}/boltz2_assets_verified}"
-checkpoint_dir="${R8_CHECKPOINT_DIR:-${r8_dir}/boltz2_checkpoint_xet}"
+checkpoint_dir="${R8_CHECKPOINT_DIR:-${r8_dir}/boltz2_checkpoint_verified}"
 cache_dir="${R8_BOLTZ_CACHE_DIR:-${r8_dir}/boltz2_cache}"
-checkpoint_tmux="${R8_CHECKPOINT_TMUX:-usp15-r8-checkpoint}"
+checkpoint_tmux="${R8_CHECKPOINT_TMUX:-usp15-r8-checkpoint-range}"
+checkpoint_report="${R8_CHECKPOINT_REPORT:-${report_dir}/checkpoint_full_download.json}"
 mols_path="${verified_asset_dir}/mols.tar"
 checkpoint_path="${checkpoint_dir}/boltz2_conf.ckpt"
 
@@ -24,7 +25,7 @@ fi
 while tmux has-session -t "${checkpoint_tmux}" 2>/dev/null; do
     sleep 30
 done
-if ! "${python_bin}" - "${report_dir}/checkpoint_xet_download.json" <<'PY'
+if ! "${python_bin}" - "${checkpoint_report}" <<'PY'
 import json
 import sys
 from pathlib import Path
