@@ -15,11 +15,15 @@ REPO_ID = "boltz-community/boltz-2"
 EXPECTED_SIZES = {
     "mols.tar": 1_855_662_080,
     "boltz2_conf.ckpt": 2_286_561_469,
+    "boltz2_aff.ckpt": 2_062_139_170,
 }
 EXPECTED_SHA256 = {
     "mols.tar": "39e076d96dbec6b4e86982bbda16f3a53a2a60c9bdc17828d88f6f9a0c7d1fd7",
     "boltz2_conf.ckpt": (
         "090e82ac8c92f5e943fa1b39e7410a44027bea7243c0bbb3caa67a77fc1428e1"
+    ),
+    "boltz2_aff.ckpt": (
+        "dcc5cd3722b1c9eaa34267e4ae32f55cbbf1963f4c19319381ccfa30fdd2ca9e"
     ),
 }
 

@@ -14,8 +14,15 @@ checkpoint_tmux="${R8_CHECKPOINT_TMUX:-usp15-r8-checkpoint-range}"
 checkpoint_report="${R8_CHECKPOINT_REPORT:-${report_dir}/checkpoint_full_download.json}"
 mols_path="${verified_asset_dir}/mols.tar"
 checkpoint_path="${checkpoint_dir}/boltz2_conf.ckpt"
+affinity_dir="${R8_AFFINITY_DIR:-${r8_dir}/boltz2_affinity_verified}"
+affinity_path="${affinity_dir}/boltz2_aff.ckpt"
+affinity_report="${R8_AFFINITY_REPORT:-${report_dir}/affinity_full_download.json}"
 
-mkdir -p "${report_dir}" "${verified_asset_dir}" "${cache_dir}"
+mkdir -p \
+    "${report_dir}" \
+    "${verified_asset_dir}" \
+    "${affinity_dir}" \
+    "${cache_dir}"
 exec 9>"${r8_dir}/r8_pipeline_queue.lock"
 if ! flock -n 9; then
     echo "Another R8 pipeline queue holds the lock"
@@ -69,8 +76,38 @@ then
     exit 1
 fi
 
+if [[ ! -f "${affinity_path}" ]]; then
+    truncate -s 2062139170 "${affinity_path}"
+fi
+"${python_bin}" "${campaign_dir}/scripts/repair_sparse_hf_asset.py" \
+    --file "${affinity_path}" \
+    --url "https://huggingface.co/boltz-community/boltz-2/resolve/main/boltz2_aff.ckpt" \
+    --expected-size 2062139170 \
+    --expected-sha256 dcc5cd3722b1c9eaa34267e4ae32f55cbbf1963f4c19319381ccfa30fdd2ca9e \
+    --report "${affinity_report}" \
+    --workers 8 \
+    --chunk-size 33554432 \
+    --retries 4 \
+    > "${r8_dir}/affinity_full_parallel.log" 2>&1
+
+if ! "${python_bin}" - "${affinity_report}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+raise SystemExit(
+    0 if path.is_file() and json.loads(path.read_text())["verified"] is True else 1
+)
+PY
+then
+    echo "boltz2_aff.ckpt did not pass exact size and LFS SHA-256 verification"
+    exit 1
+fi
+
 cp -f "${mols_path}" "${cache_dir}/mols.tar"
 cp -f "${checkpoint_path}" "${cache_dir}/boltz2_conf.ckpt"
+cp -f "${affinity_path}" "${cache_dir}/boltz2_aff.ckpt"
 
 exec 8>"${r8_dir}/r8_gpu_pipeline.lock"
 if ! flock -n 8; then
