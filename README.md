@@ -16,6 +16,16 @@
 
 四个设计池及全部阈值记录在 [`config/campaign.json`](config/campaign.json) 和 [`config/pools.tsv`](config/pools.tsv)。
 
+## 参数优化与失败恢复
+
+R1 的四个 100-backbone pilot 已完成，但首轮 Complex_base LigandMPNN + AF2 smoke 未通过既定 AF2 门控，因此不得直接扩量或放宽阈值。
+
+后续保持 USP15 DUSP 靶点不变的分阶段优化方案，包括现有 Complex_beta 候选复核、生成热点子集、紧凑性过滤、scaffold-guided 小矩阵和扩量停止规则，记录在：
+
+- [`docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md`](docs/USP15_PARAMETER_OPTIMIZATION_PLAN.md)
+
+该文档当前为 R2 待执行计划。实施前必须建立独立 R2 配置并更新 `Agent.md`；不得覆盖 R1 参数和失败记录。
+
 ## 当前计算协议
 
 本版本不使用 PyRosetta：
