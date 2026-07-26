@@ -105,4 +105,15 @@ done
     --csv "${phase_dir}/reports/metrics.csv"
 
 touch "${phase_dir}/r10_selectivity.completed"
-echo "R10 same-pose selectivity screen completed"
+"${python_bin}" "${campaign_dir}/scripts/export_r10_candidates.py" \
+    --positive-summary "${positive_summary}" \
+    --interface-summary "${interface_summary}" \
+    --selectivity-summary "${phase_dir}/reports/summary.json" \
+    --input-report "${input_report}" \
+    --panel-dir "${panel_dir}" \
+    --positive-output-dir "${positive_dir}/output/ptm_model_2_ct" \
+    --selectivity-output-dir "${phase_dir}/output" \
+    --output-dir "${campaign_dir}/r10/final_candidates"
+
+touch "${campaign_dir}/r10/r10_final_export.completed"
+echo "R10 same-pose selectivity screen and candidate export completed"
