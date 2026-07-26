@@ -14,6 +14,7 @@ panel_dir="${campaign_dir}/r7/rescreen_panel/pdb"
 homolog_dir="${campaign_dir}/r10/homologs/targets"
 input_dir="${phase_dir}/input"
 input_report="${phase_dir}/reports/input_preparation.json"
+interface_summary="${phase_dir}/reports/interface_summary.json"
 params_dir="${ovo_home_dir}/reference_files/alphafold_models"
 
 mkdir -p "${input_dir}" "${phase_dir}/output" "${phase_dir}/logs" "${phase_dir}/reports"
@@ -35,8 +36,16 @@ do
     fi
 done
 
+"${python_bin}" "${campaign_dir}/scripts/audit_r10_interfaces.py" \
+    --positive-summary "${positive_summary}" \
+    --panel-csv "${campaign_dir}/r7/rescreen_panel/reports/panel.csv" \
+    --panel-dir "${panel_dir}" \
+    --json "${interface_summary}" \
+    --csv "${phase_dir}/reports/interface_metrics.csv"
+
 "${python_bin}" "${campaign_dir}/scripts/prepare_r10_selectivity_inputs.py" \
     --positive-summary "${positive_summary}" \
+    --interface-summary "${interface_summary}" \
     --panel-dir "${panel_dir}" \
     --usp4-target "${homolog_dir}/USP4_5CTR_DUSP_aligned_chainB.pdb" \
     --usp11-target "${homolog_dir}/USP11_4MEL_DUSP_aligned_chainB.pdb" \

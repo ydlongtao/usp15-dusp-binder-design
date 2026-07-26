@@ -89,10 +89,12 @@ def main() -> None:
     args = parse_args()
     positive_summary = json.loads(args.positive_summary.read_text(encoding="utf-8"))
     input_report = json.loads(args.input_report.read_text(encoding="utf-8"))
-    candidate_ids = set(positive_summary["passing_ids"])
     report_ids = {record["id"] for record in input_report["records"]}
-    if not candidate_ids or candidate_ids != report_ids:
-        raise ValueError("Positive summary and selectivity input report disagree")
+    candidate_ids = report_ids
+    if not candidate_ids or not candidate_ids.issubset(
+        set(positive_summary["passing_ids"])
+    ):
+        raise ValueError("Selectivity inputs are not a subset of positive passers")
 
     on_target = index_records(read_jsonl(args.positive_jsonl), candidate_ids)
     off_targets = {

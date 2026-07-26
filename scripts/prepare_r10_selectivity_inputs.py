@@ -36,6 +36,7 @@ AA3_TO_1 = {
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--positive-summary", required=True, type=Path)
+    parser.add_argument("--interface-summary", required=True, type=Path)
     parser.add_argument("--panel-dir", required=True, type=Path)
     parser.add_argument("--usp4-target", required=True, type=Path)
     parser.add_argument("--usp11-target", required=True, type=Path)
@@ -98,11 +99,16 @@ def write_complex(binder: list[str], target: list[str], output: Path) -> None:
 def main() -> None:
     args = parse_args()
     summary = json.loads(args.positive_summary.read_text(encoding="utf-8"))
-    passing_ids = list(summary["passing_ids"])
+    interface_summary = json.loads(
+        args.interface_summary.read_text(encoding="utf-8")
+    )
+    passing_ids = list(interface_summary["passing_ids"])
     if summary.get("model") != "model_2_ptm" or summary.get("template_mode") != "ct":
         raise ValueError("Positive summary is not the R10 model-2 pTM ct screen")
     if not passing_ids:
-        raise ValueError("No R10 positive-screen passers")
+        raise ValueError("No R10 positive-screen passer cleared the interface audit")
+    if not set(passing_ids).issubset(set(summary["passing_ids"])):
+        raise ValueError("Interface audit contains a non-positive candidate")
 
     targets = {
         "USP4": args.usp4_target,
@@ -137,6 +143,7 @@ def main() -> None:
     report = {
         "phase": "R10 same-pose USP4/USP11 selectivity input preparation",
         "positive_summary": str(args.positive_summary),
+        "interface_summary": str(args.interface_summary),
         "positive_count": len(records),
         "targets": {
             name: {
