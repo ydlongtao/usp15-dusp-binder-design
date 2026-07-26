@@ -55,9 +55,16 @@ fi
     "${pipeline_root}/proteinqc-seq-composition/bin/seq_composition.py" \
     "${input_dir}" "${report_dir}/seq_composition.csv" --chains A
 
-"${python_bin}" "${campaign_dir}/scripts/run_r10_pydssp.py" \
+cp -f \
+    "${pipeline_root}/backbone-metrics/bin/pydssp_numpy.py" \
+    "${phase_dir}/vendor/pydssp_numpy.py"
+docker run --rm \
+    -v "${campaign_dir}:${campaign_dir}" \
+    -w "${campaign_dir}" \
+    ovo-python-structure \
+    python3 "${campaign_dir}/scripts/run_r10_pydssp.py" \
     --input-dir "${input_dir}" \
-    --pydssp-module "${pipeline_root}/backbone-metrics/bin/pydssp_numpy.py" \
+    --pydssp-module "${phase_dir}/vendor/pydssp_numpy.py" \
     --output "${report_dir}/pydssp.csv"
 
 "${python_bin}" "${campaign_dir}/scripts/download_proteinsol.py" \
