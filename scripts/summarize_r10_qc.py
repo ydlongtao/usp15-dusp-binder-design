@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seq-composition", required=True, type=Path)
     parser.add_argument("--proteinsol", required=True, type=Path)
     parser.add_argument("--esmif", required=True, type=Path)
+    parser.add_argument("--pydssp", required=True, type=Path)
     parser.add_argument("--json", required=True, type=Path)
     parser.add_argument("--csv", required=True, type=Path)
     return parser.parse_args()
@@ -44,6 +45,7 @@ def main() -> None:
     sequence_rows = read_rows(args.seq_composition)
     proteinsol_rows = read_rows(args.proteinsol)
     esmif_rows = read_rows(args.esmif)
+    pydssp_rows = read_rows(args.pydssp)
 
     rows = []
     for record in manifest["records"]:
@@ -51,6 +53,7 @@ def main() -> None:
         seq = sequence_rows[candidate_id]
         sol = proteinsol_rows[candidate_id]
         esm = esmif_rows[candidate_id]
+        dssp = pydssp_rows[candidate_id]
         avg_entropy = finite(seq, "avg_entropy")
         gravy = finite(seq, "gravy")
         scaled_sol = finite(sol, "scaled-sol")
@@ -66,6 +69,9 @@ def main() -> None:
                 "gravy": gravy,
                 "proteinsol_scaled": scaled_sol,
                 "esmif_native_seq_avg_softmax": esmif_probability,
+                "pydssp_helix_fraction": finite(dssp, "helix_fraction"),
+                "pydssp_strand_fraction": finite(dssp, "strand_fraction"),
+                "pydssp_loop_fraction": finite(dssp, "loop_fraction"),
                 "low_complexity_pass": low_complexity_pass,
                 "hydrophobicity_pass": hydrophobicity_pass,
                 "solubility_pass": solubility_pass,
@@ -81,6 +87,7 @@ def main() -> None:
             "proteinsol_scaled_min": PROTEINSOL_SCALED_MIN,
         },
         "esm_if_role": "ranking diagnostic only",
+        "secondary_structure_role": "PyDSSP three-state diagnostic only",
         "input_count": len(rows),
         "passing_count": len(passing_ids),
         "passing_ids": passing_ids,

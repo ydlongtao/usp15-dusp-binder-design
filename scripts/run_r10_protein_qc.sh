@@ -55,6 +55,11 @@ fi
     "${pipeline_root}/proteinqc-seq-composition/bin/seq_composition.py" \
     "${input_dir}" "${report_dir}/seq_composition.csv" --chains A
 
+"${python_bin}" "${campaign_dir}/scripts/run_r10_pydssp.py" \
+    --input-dir "${input_dir}" \
+    --pydssp-module "${pipeline_root}/backbone-metrics/bin/pydssp_numpy.py" \
+    --output "${report_dir}/pydssp.csv"
+
 "${python_bin}" "${campaign_dir}/scripts/download_proteinsol.py" \
     --output "${proteinsol_zip}" \
     --report "${report_dir}/proteinsol_download.json"
@@ -87,6 +92,7 @@ docker run --rm --gpus all \
     --seq-composition "${report_dir}/seq_composition.csv" \
     --proteinsol "${report_dir}/proteinsol.csv" \
     --esmif "${report_dir}/esmif.csv" \
+    --pydssp "${report_dir}/pydssp.csv" \
     --json "${report_dir}/summary.json" \
     --csv "${report_dir}/metrics.csv"
 
