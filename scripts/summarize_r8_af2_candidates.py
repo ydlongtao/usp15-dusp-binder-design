@@ -23,6 +23,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-inputs", required=True, type=int)
     parser.add_argument("--json", required=True, type=Path)
     parser.add_argument("--csv", required=True, type=Path)
+    parser.add_argument(
+        "--phase-name",
+        default="R8 AF2 pTM-model-2 candidate ensemble",
+    )
     return parser.parse_args()
 
 
@@ -102,7 +106,7 @@ def main() -> None:
 
     passing_ids = [row["id"] for row in rows if row["af2_positive_pass"]]
     summary = {
-        "phase": "R8 AF2 pTM-model-2 candidate ensemble",
+        "phase": args.phase_name,
         "model": "model_2_ptm",
         "template_mode": "ct",
         "dropout": True,
