@@ -103,6 +103,13 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     jsonl_path = output_dir.with_suffix(".jsonl")
+    template_mode = (
+        "ct"
+        if args.use_interface_template
+        else "tbt"
+        if args.use_binder_template
+        else "tt"
+    )
 
     with jsonl_path.open("w", encoding="utf-8") as handle:
         for path in paths:
@@ -134,13 +141,7 @@ def main() -> None:
                     "seed": seed,
                     "dropout": args.dropout,
                     "num_recycles": args.num_recycles,
-                    "template_mode": (
-                        "ct"
-                        if args.use_interface_template
-                        else "tbt"
-                        if args.use_binder_template
-                        else "tt"
-                    ),
+                    "template_mode": template_mode,
                 }
                 record.update(
                     {
@@ -157,7 +158,8 @@ def main() -> None:
                 handle.flush()
                 flip_chains(
                     model.save_pdb(),
-                    output_dir / f"{record['id']}__{model_name}_ct.pdb",
+                    output_dir
+                    / f"{record['id']}__{model_name}_{template_mode}.pdb",
                 )
                 print(json.dumps(record), flush=True)
 
