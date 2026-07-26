@@ -143,7 +143,25 @@ R8 seed-0 已技术完成，但两个阳性对照的 target-aligned binder RMSD
 停止，没有运行 seeds 1–2、52 成员正筛或 USP4/USP11 反筛，也没有放宽
 阈值。
 
-当前没有满足既定正向门控与 USP4/USP11 反筛要求的计算候选。
+R9 随后测试 target-template-only `model_2_ptm`，两个阳性对照的三组
+seeds 仍全部失败，因此没有启动面板筛选：
+
+- [`docs/USP15_R9_TARGET_TEMPLATE_RESULTS.md`](docs/USP15_R9_TARGET_TEMPLATE_RESULTS.md)
+
+R10 使用唯一通过阳性对照校准的 `model_2_ptm` interface-template
+协议，明确作为 geometry-conditioned compatibility test，而不是独立
+fold-and-dock 验证。固定 52 成员面板得到 41 个 USP15 正向通过者，
+36 个通过非 PyRosetta 界面审计，28 个通过 USP4/USP11 同姿势反筛，
+在 80% 序列一致性聚类后形成 24 个簇。最终导出 10 个代表，10/10
+通过 ProteinQC；每个代表均有 3/3 USP15 seeds 和 6/6 USP4/USP11
+配对反筛 seeds 通过：
+
+- [`docs/USP15_R10_GEOMETRY_CONDITIONED_PLAN.md`](docs/USP15_R10_GEOMETRY_CONDITIONED_PLAN.md)
+- [`docs/USP15_R10_RESULTS.md`](docs/USP15_R10_RESULTS.md)
+
+这些输出是 geometry-conditioned 计算候选，不是实验结合、选择性、
+抑制或细胞活性的证据；R8 sequence-only 和 R9 target-template-only
+失败记录仍然成立。
 
 ## 当前计算协议
 
@@ -160,11 +178,11 @@ R8 seed-0 已技术完成，但两个阳性对照的 target-aligned binder RMSD
    - 不设置氨基酸 bias
 4. R1–R5 使用 AF2 `model_1_multimer` target-template、3 recycles；
    这些历史阴性记录继续保留。
-5. R7/R8 使用已校准的 AF2 `model_2_ptm` ct seeds 0–2，并在 Boltz-2
-   阳性对照校准成功后增加 sequence-only Boltz-2 seeds 0–2 独立复核。
-6. 正向通过者仍必须完成原定 USP4/USP11 的 pTM 与 multimer
-   target-template 反筛，选择性阈值不变。
-7. 用界面 ΔSASA、碰撞、ProteinQC、ESM-IF、ProteinSol 和序列性质替代 Rosetta 指标。
+5. R7/R8 使用 AF2 `model_2_ptm` ct seeds 0–2 校准，并尝试 Boltz-2
+   sequence-only 独立复核；Boltz-2 阳性对照失败，因此未用于候选晋级。
+6. R10 仅使用校准成功的 `model_2_ptm` ct 做 geometry-conditioned
+   USP15 正筛以及 USP4/USP11 同姿势反筛，选择性阈值不变。
+7. 用界面 ΔSASA、碰撞、ProteinQC、ESM-IF、Protein-Sol 和序列性质替代 Rosetta 指标。
 
 OpenMM 相互作用能和埋藏极性原子检查仅用于排序，不能解释为 Rosetta ddG 或 Rosetta buried-unsatisfied hydrogen bonds。
 
