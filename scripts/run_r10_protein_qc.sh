@@ -13,6 +13,7 @@ input_dir="${phase_dir}/input"
 report_dir="${phase_dir}/reports"
 esm_models_dir="${ovo_home_dir}/reference_files/esm_models"
 esm_checkpoint="${esm_models_dir}/esm_if1_gvp4_t16_142M_UR50.pt"
+proteinsol_zip="${phase_dir}/protein_sol.zip"
 
 mkdir -p "${input_dir}" "${report_dir}" "${phase_dir}/vendor"
 exec 9>"${phase_dir}/r10_protein_qc.lock"
@@ -54,10 +55,18 @@ fi
     "${pipeline_root}/proteinqc-seq-composition/bin/seq_composition.py" \
     "${input_dir}" "${report_dir}/seq_composition.csv" --chains A
 
-PYTHONPATH="${pipeline_root}/proteinqc-proteinsol/bin" \
+"${python_bin}" "${campaign_dir}/scripts/download_proteinsol.py" \
+    --output "${proteinsol_zip}" \
+    --report "${report_dir}/proteinsol_download.json"
+mkdir -p "${phase_dir}/lib"
+unzip -q -o "${proteinsol_zip}" -d "${phase_dir}/lib"
+(
+    cd "${phase_dir}"
+    PYTHONPATH="${pipeline_root}/proteinqc-proteinsol/bin" \
     "${python_bin}" \
     "${pipeline_root}/proteinqc-proteinsol/bin/proteinsol.py" \
     "${input_dir}" "${report_dir}/proteinsol.csv" --chains A
+)
 
 cp -f \
     "${pipeline_root}/proteinqc-esmif/bin/esmif.py" \
