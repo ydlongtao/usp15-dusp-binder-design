@@ -158,6 +158,7 @@ fold-and-dock 验证。固定 52 成员面板得到 41 个 USP15 正向通过者
 
 - [`docs/USP15_R10_GEOMETRY_CONDITIONED_PLAN.md`](docs/USP15_R10_GEOMETRY_CONDITIONED_PLAN.md)
 - [`docs/USP15_R10_RESULTS.md`](docs/USP15_R10_RESULTS.md)
+- [`docs/USP15_R10_complete_report.html`](docs/USP15_R10_complete_report.html)（自包含 HTML 完整报告）
 
 这些输出是 geometry-conditioned 计算候选，不是实验结合、选择性、
 抑制或细胞活性的证据；R8 sequence-only 和 R9 target-template-only
