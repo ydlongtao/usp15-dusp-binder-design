@@ -48,6 +48,15 @@ python scripts/create_minerva_transfer_manifest.py \
   --verify
 ```
 
+使用 SSH/rsync 上传时：
+
+```bash
+export LOCAL_MD_DIR=/local/path/md_openmm
+export MINERVA_SSH=your_minerva_ssh_alias
+export MINERVA_DEST=/minerva/absolute/project/path
+bash scripts/minerva/upload_rsync.sh
+```
+
 ## Minerva 专用 smoke
 
 必须在 Minerva GPU 节点重新运行 smoke，不能仅依赖原 V100 的结果：
