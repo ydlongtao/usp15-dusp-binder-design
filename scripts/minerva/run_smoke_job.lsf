@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${USP15_MD_DIR:?Set USP15_MD_DIR to the transferred md_openmm directory}"
+: "${OPENMM_SIF:?Set OPENMM_SIF to the OpenMM 8.5.2 SIF image}"
+
+runtime=${APPTAINER_CMD:-apptainer}
+if ! command -v "$runtime" >/dev/null 2>&1; then
+  runtime=singularity
+fi
+export APPTAINERENV_PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+
+mkdir -p "$USP15_MD_DIR/smoke_minerva/analysis" "$USP15_MD_DIR/lsf_logs"
+nvidia-smi -L >"$USP15_MD_DIR/reports/minerva_smoke_gpu.txt"
+"$runtime" --version >>"$USP15_MD_DIR/reports/minerva_smoke_gpu.txt"
+
+"$runtime" exec --nv --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /opt/conda/bin/python /campaign/scripts/run_r10_openmm_replica.py \
+    --prepared-dir /campaign/prepared/rank01 \
+    --output-dir /campaign/smoke_minerva/rank01_seed0 \
+    --seed 101000 \
+    --smoke
+
+"$runtime" exec --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /opt/conda/bin/python /campaign/scripts/analyze_r10_openmm_replica.py \
+    --topology /campaign/prepared/rank01/protein_protonated.pdb \
+    --trajectory /campaign/smoke_minerva/rank01_seed0/production_protein.xtc \
+    --output-dir /campaign/smoke_minerva/analysis \
+    --burn-in-ns 0
+
+"$runtime" exec --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /opt/conda/bin/python /campaign/scripts/audit_r10_openmm_smoke.py \
+    --status /campaign/smoke_minerva/rank01_seed0/status.json \
+    --analysis /campaign/smoke_minerva/analysis/summary.json \
+    --preparation /campaign/prepared/rank01/preparation.json \
+    --output /campaign/smoke_minerva/audit.json

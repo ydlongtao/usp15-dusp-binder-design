@@ -164,6 +164,7 @@ fold-and-dock 验证。固定 52 成员面板得到 41 个 USP15 正向通过者
 - [`docs/USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md`](docs/USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md)（结构图、MD 参数及 SPR/MST 起始条件）
 - [`docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json`](docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json)（10 个 ff19SB/OPC 制备体系审计）
 - [`docs/USP15_R10_MD_CUDA_SMOKE_AUDIT.json`](docs/USP15_R10_MD_CUDA_SMOKE_AUDIT.json)（真实 V100 CUDA smoke 审计）
+- [`docs/USP15_R10_MINERVA_MIGRATION.md`](docs/USP15_R10_MINERVA_MIGRATION.md)（Minerva LSF/Apptainer 迁移与恢复）
 - [`docs/figures/USP15_R10`](docs/figures/USP15_R10)（10 个复合物的高分辨率统一视角图）
 - [`docs/structures/USP15_R10`](docs/structures/USP15_R10)（与结构图配套的 10 个 AF2 复合物 PDB）
 
@@ -171,9 +172,10 @@ fold-and-dock 验证。固定 52 成员面板得到 41 个 USP15 正向通过者
 抑制或细胞活性的证据；R8 sequence-only 和 R9 target-template-only
 失败记录仍然成立。报告中的结构图来自 AF2 预测，不是分子动力学
 轨迹帧。OpenMM 8.5.2、AMBER ff19SB/OPC 的真实执行队列已经建立，
-10/10 体系已通过制备审计，V100 CUDA smoke 也已通过，首条 100 ns
-生产轨迹正在运行；因此当前版本仍没有完整重复可支持 RMSD、接触占有率
-或自由能结论。
+10/10 体系已通过制备审计，V100 CUDA smoke 也已通过。原服务器任务已按
+用户要求暂停并迁移至 Minerva；暂停点为 `rank01/seed0` 的 NPT 平衡，
+正式无约束生产尚未开始，仍没有完整重复可支持 RMSD、接触占有率或自由能
+结论。
 
 ## 当前计算协议
 

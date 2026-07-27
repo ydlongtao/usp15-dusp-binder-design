@@ -43,6 +43,7 @@ R10 固定面板的筛选过程为：
 - [机器可读 OpenMM 参数](config/usp15_r10_openmm_md.json)
 - [10 个 MD 制备体系审计](docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json)
 - [V100 CUDA smoke 审计](docs/USP15_R10_MD_CUDA_SMOKE_AUDIT.json)
+- [Minerva 迁移与恢复说明](docs/USP15_R10_MINERVA_MIGRATION.md)
 
 ## 靶点与设计约束
 
@@ -73,8 +74,8 @@ interface-template 协议，是 geometry-conditioned compatibility test，
 
 - 结构图是 AF2 预测，不是实验解析结构；
 - 结构图不是分子动力学轨迹帧；
-- OpenMM 执行队列已建立，10/10 体系和真实 CUDA smoke 已通过审计，
-  首条 100 ns 生产轨迹正在运行；
+- OpenMM 执行队列已建立，10/10 体系和真实 CUDA smoke 已通过审计；
+  原服务器任务已暂停，正在迁移至 Minerva；
 - 计算反筛不等于已经获得实验选择性；
 - 当前结果不能直接证明 USP15 抑制、天然互作阻断或细胞活性。
 
@@ -127,8 +128,9 @@ buried SASA、相对 MM/GBSA 和重复间一致性。
 
 10/10 个制备体系已经通过拓扑、SHA-256、OPC 四点水、盒矢量和
 “生产期无位置约束”审计。真实 V100 CUDA smoke 已进一步确认 25,000
-steps、5 个 ×10 ps 帧及 3,336 个蛋白轨迹原子；首条 100 ns 轨迹正在运行，
-因此目前仍没有完整重复可用于稳定性或 MM/GBSA 结论。
+steps、5 个 ×10 ps 帧及 3,336 个蛋白轨迹原子。原服务器在
+`rank01/seed0` 的 NPT 平衡阶段暂停，正式生产为 0/30；因此目前仍没有
+完整重复可用于稳定性或 MM/GBSA 结论。
 
 SPR/MST 条件只作为方法开发起点。首轮实验应优先：
 

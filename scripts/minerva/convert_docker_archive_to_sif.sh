@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: $0 OPENMM_DOCKER_TAR_GZ OUTPUT_SIF" >&2
+  exit 2
+fi
+
+archive=$1
+output_sif=$2
+runtime=${APPTAINER_CMD:-apptainer}
+
+if [[ ! -s "$archive" ]]; then
+  echo "Docker archive not found: $archive" >&2
+  exit 3
+fi
+if ! command -v "$runtime" >/dev/null 2>&1; then
+  if command -v singularity >/dev/null 2>&1; then
+    runtime=singularity
+  else
+    echo "Neither apptainer nor singularity is available" >&2
+    exit 4
+  fi
+fi
+
+mkdir -p "$(dirname "$output_sif")"
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-"$(dirname "$output_sif")/.apptainer-tmp"}
+export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-"$(dirname "$output_sif")/.apptainer-cache"}
+mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
+
+"$runtime" build "$output_sif" "docker-archive:$archive"
+"$runtime" exec "$output_sif" /opt/conda/bin/python -c \
+  'import openmm; print(openmm.__version__)'
+sha256sum "$output_sif" >"$output_sif.sha256"

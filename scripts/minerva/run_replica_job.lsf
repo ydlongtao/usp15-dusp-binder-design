@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${LSB_JOBINDEX:?This script must run as an LSF array task}"
+: "${USP15_MD_DIR:?Set USP15_MD_DIR to the transferred md_openmm directory}"
+: "${OPENMM_SIF:?Set OPENMM_SIF to the OpenMM 8.5.2 SIF image}"
+
+if ! grep -q '"status": "passed"' "$USP15_MD_DIR/smoke_minerva/audit.json"; then
+  echo "Minerva-specific CUDA smoke has not passed" >&2
+  exit 5
+fi
+index=$((10#$LSB_JOBINDEX - 1))
+rank_number=$((index / 3 + 1))
+seed=$((index % 3))
+rank=$(printf '%02d' "$rank_number")
+recorded_seed=$((100000 + 1000 * rank_number + seed))
+runtime=${APPTAINER_CMD:-apptainer}
+if ! command -v "$runtime" >/dev/null 2>&1; then
+  runtime=singularity
+fi
+export APPTAINERENV_PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+
+run_dir="$USP15_MD_DIR/runs/rank${rank}/seed${seed}"
+analysis_dir="$USP15_MD_DIR/analysis/rank${rank}/seed${seed}"
+mkdir -p "$run_dir" "$analysis_dir"
+
+"$runtime" exec --nv --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /opt/conda/bin/python /campaign/scripts/run_r10_openmm_replica.py \
+    --prepared-dir "/campaign/prepared/rank${rank}" \
+    --output-dir "/campaign/runs/rank${rank}/seed${seed}" \
+    --seed "$recorded_seed" \
+    --production-ns 100
+
+"$runtime" exec --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /opt/conda/bin/python /campaign/scripts/analyze_r10_openmm_replica.py \
+    --topology "/campaign/prepared/rank${rank}/protein_protonated.pdb" \
+    --trajectory "/campaign/runs/rank${rank}/seed${seed}/production_protein.xtc" \
+    --output-dir "/campaign/analysis/rank${rank}/seed${seed}"
+
+"$runtime" exec --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+  /bin/bash /campaign/scripts/run_r10_mmpbsa.sh \
+    "/campaign/prepared/rank${rank}" \
+    "/campaign/runs/rank${rank}/seed${seed}" \
+    "/campaign/analysis/rank${rank}/seed${seed}/mmpbsa"
+
+completed=$(
+  find "$USP15_MD_DIR/runs" -name status.json -type f -exec \
+    grep -l '"status": "completed"' {} + 2>/dev/null | wc -l | tr -d ' '
+)
+if [[ "$completed" == "30" ]]; then
+  "$runtime" exec --bind "$USP15_MD_DIR:/campaign" "$OPENMM_SIF" \
+    /opt/conda/bin/python /campaign/scripts/summarize_r10_openmm_md.py \
+      --md-dir /campaign \
+      --output-dir /campaign/reports/final_md
+fi

@@ -246,6 +246,22 @@ byte counts and SHA-256 values recorded in the R8 plan; do not confuse the
 transport `xetHash` with the LFS file hash. Do not use Boltz affinity output as
 a protein-protein acceptance metric.
 
+## Authorized R10 Minerva migration
+
+The user paused the original-server OpenMM run before any formal production
+replica completed. Preserve the following migration invariants:
+
+- do not reconnect to restart the original `usp15-r10-md` tmux queue unless the
+  user explicitly reverses the migration decision;
+- retain OpenMM 8.5.2, AMBER ff19SB, OPC water, 300 K, 1 bar, 2 fs, and no
+  binder-target restraint in production;
+- verify the transfer SHA-256 manifest before running on Minerva;
+- convert the audited Docker archive to SIF with Apptainer/Singularity;
+- require a new Minerva GPU-node CUDA smoke and a passed
+  `smoke_minerva/audit.json` before production;
+- submit the 30 replicas through Minerva LSF with maximum concurrency 1;
+- keep all original failed attempts and paused-state records for provenance.
+
 ## Repository layout
 
 - `config/campaign.json`: authoritative campaign parameters.
@@ -332,6 +348,12 @@ a protein-protein acceptance metric.
   smoke, seeds 1–2 calibration, and serial AF2-to-Boltz positive-screen queue.
 - `docker/boltz-v100.Dockerfile`: same Boltz 2.2.1 runtime with an official
   PyTorch/cu121 wheel that retains V100 `sm_70` support.
+- `docs/USP15_R10_MINERVA_MIGRATION.md`: paused-state provenance and Minerva
+  LSF/Apptainer transfer procedure.
+- `scripts/minerva/`: Minerva-specific container conversion, CUDA smoke, and
+  strictly serial LSF array submission scripts.
+- `scripts/create_minerva_transfer_manifest.py`: SHA-256 write/verify utility
+  for the transferred MD directory.
 
 ## Editing rules
 
