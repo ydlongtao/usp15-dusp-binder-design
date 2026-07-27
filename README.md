@@ -1,5 +1,7 @@
 # USP15 DUSP Binder Design
 
+[简体中文快速导航](README.zh-CN.md) · [完整 HTML 结果报告](docs/USP15_R10_complete_report.html) · [MIT License](LICENSE)
+
 这是一个面向人 USP15 N 端 DUSP 结构域的计算型微型蛋白 binder 设计项目。工作流使用 OVO 提供的 RFdiffusion RFD1、LigandMPNN 和 AlphaFold2/ColabDesign 模块，通过 Nextflow + Docker 在 GPU 服务器上直接运行。
 
 本项目仅覆盖计算设计、排序和导出，不包含湿实验，也不宣称候选一定抑制 USP15 酶活或阻断特定天然互作。
@@ -348,3 +350,10 @@ done
 - `raw/`、`results/`、Nextflow `work/` 和模型文件不进入 Git。
 - 计算结果只能作为后续实验验证的候选来源。
 - 6DJ9 证明该 DUSP 表面可被 UbV 结合，但不保证设计会调控某个特定天然互作。
+
+## 开源许可
+
+本仓库原创代码和文档采用 [MIT License](LICENSE)。RFdiffusion、
+LigandMPNN、AlphaFold/ColabDesign、Boltz、OpenMM、OVO、模型权重及
+RCSB PDB 来源结构仍分别受其自身许可证或使用条款约束；本仓库的 MIT
+许可证不会替代这些第三方条款。
