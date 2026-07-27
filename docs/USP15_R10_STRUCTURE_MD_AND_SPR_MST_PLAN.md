@@ -47,14 +47,19 @@ binder 和六个热点分别以蓝灰、橙色和洋红色表示。十张图使�
 | 9 | 2 | 8510.52 | 4.728 | -5.707 |
 | 10 | 2 | 8434.64 | 5.205 | -3.319 |
 
-## 建议的显式溶剂 MD 协议
+## 已启动的显式溶剂 MD 协议
 
 机器可读的完整参数位于
 [`config/usp15_r10_openmm_md.json`](../config/usp15_r10_openmm_md.json)。
-建议使用 OpenMM 8.5 或更高版本，蛋白采用
-`amber19/protein.ff19SB.xml`，水和离子采用 `amber19/opc.xml`。OpenMM
-官方文档列出了 Amber19、ff19SB、OPC、PME 和约束等对应实现：
-[OpenMM 8.5 Force Fields and Simulation Setup](https://docs.openmm.org/latest/userguide/application/02_running_sims.html)。
+实际运行环境为 OpenMM 8.5.2。由于 OpenMM `Modeller.addSolvent()`
+不能直接构建 OPC 水盒，体系使用 AmberTools `tleap` 的
+`leaprc.protein.ff19SB`、`leaprc.water.opc` 和 `OPCBOX` 构建，再将
+AMBER `prmtop/inpcrd` 导入 OpenMM。这样保留 ff19SB/OPC 组合，同时避免
+把 OPC 错当成 TIP3P 盒。
+
+当前执行状态为：10 个复合物正在重新制备和强制审计，真实 V100 CUDA
+smoke 与正式生产轨迹尚未完成。因此本节记录的是已冻结的执行参数，而不是
+已经得到的 MD 稳定性结论；只有完成轨迹及分析后才会填写结果表。
 
 ### 体系准备
 
@@ -66,7 +71,7 @@ binder 和六个热点分别以蓝灰、橙色和洋红色表示。十张图使�
 | 末端 | 默认两性离子；只有实验样品确实封端时才改为封端 |
 | 力场 | AMBER ff19SB |
 | 水模型 | OPC |
-| 周期盒 | dodecahedron，溶质到盒边至少 1.2 nm |
+| 周期盒 | `tleap solvateOct` 截角八面体，溶质到盒边至少 1.2 nm |
 | 盐 | 0.15 M NaCl，并中和体系净电荷 |
 | 长程静电 | PME |
 | 非键截断 | 1.0 nm |
@@ -90,7 +95,7 @@ binder–target 距离约束；位置约束只用于预平衡并在生产期完�
 | 压强耦合 | `MonteCarloBarostat`，每 25 steps 尝试 |
 | 初筛采样 | 每个复合物 3 个独立重复 × 100 ns，共 3.0 μs |
 | 扩展采样 | 入选候选每个重复延长至总计 500 ns |
-| 轨迹输出 | 坐标和状态每 10 ps；checkpoint 每 1 ns |
+| 轨迹输出 | 蛋白坐标每 10 ps；能量/温度/体积状态每 100 ps；checkpoint 每 1 ns |
 | 随机性 | 每个体系、每个重复使用唯一且被记录的速度 seed |
 
 100 ns × 3 是实验排序前的计算初筛，不足以证明热力学收敛。若 Rank 1–3

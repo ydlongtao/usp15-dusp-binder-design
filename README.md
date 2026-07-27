@@ -162,14 +162,16 @@ fold-and-dock 验证。固定 52 成员面板得到 41 个 USP15 正向通过者
 - [`docs/USP15_R10_RESULTS.md`](docs/USP15_R10_RESULTS.md)
 - [`docs/USP15_R10_complete_report.html`](docs/USP15_R10_complete_report.html)（自包含 HTML 完整报告）
 - [`docs/USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md`](docs/USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md)（结构图、MD 参数及 SPR/MST 起始条件）
+- [`docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json`](docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json)（10 个 ff19SB/OPC 制备体系审计）
 - [`docs/figures/USP15_R10`](docs/figures/USP15_R10)（10 个复合物的高分辨率统一视角图）
 - [`docs/structures/USP15_R10`](docs/structures/USP15_R10)（与结构图配套的 10 个 AF2 复合物 PDB）
 
 这些输出是 geometry-conditioned 计算候选，不是实验结合、选择性、
 抑制或细胞活性的证据；R8 sequence-only 和 R9 target-template-only
 失败记录仍然成立。报告中的结构图来自 AF2 预测，不是分子动力学
-轨迹帧；OpenMM 参数是待执行方案，目前没有轨迹、RMSD、接触占有率
-或结合自由能结果。
+轨迹帧。OpenMM 8.5.2、AMBER ff19SB/OPC 的真实执行队列已经建立，
+10/10 体系已通过制备审计，但 CUDA smoke 和生产采样尚未完成；因此当前
+版本仍没有可报告的轨迹、RMSD、接触占有率或自由能结果。
 
 ## 当前计算协议
 

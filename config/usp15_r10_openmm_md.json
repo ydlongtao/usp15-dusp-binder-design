@@ -1,5 +1,5 @@
 {
-  "status": "prospective_protocol_not_yet_executed",
+  "status": "execution_queued_pending_cuda_smoke",
   "scope": {
     "systems": 10,
     "input_structure": "best USP15 AF2 positive seed for each R10 candidate",
@@ -28,8 +28,8 @@
     "minimum_version": "8.5",
     "platform": "CUDA",
     "precision": "mixed",
-    "force_field": "amber19/protein.ff19SB.xml",
-    "water_and_ions": "amber19/opc.xml"
+    "force_field": "AmberTools leaprc.protein.ff19SB imported by OpenMM",
+    "water_and_ions": "AmberTools leaprc.water.opc imported by OpenMM"
   },
   "preparation": {
     "experimental_construct": "tag-free USP15 DUSP and tag-free binder sequences",
@@ -37,7 +37,8 @@
     "histidines": "assign from local hydrogen-bond environment and record per system",
     "termini": "zwitterionic unless the experimental construct is chemically capped",
     "missing_atoms": "rebuild standard heavy atoms and hydrogens; do not model unresolved non-target domains",
-    "solvent_shape": "dodecahedron",
+    "solvent_shape": "truncated_octahedron",
+    "solvation_implementation": "AmberTools tleap solvateOct with OPCBOX; AMBER prmtop/inpcrd imported into OpenMM",
     "minimum_solute_padding_nm": 1.2,
     "ionic_strength_molar": 0.15,
     "positive_ion": "Na+",
@@ -91,7 +92,7 @@
     "extend_selected_duration_ns_per_replicate": 500,
     "initial_total_complex_sampling_us": 3.0,
     "coordinates_interval_ps": 10,
-    "state_interval_ps": 10,
+    "state_interval_ps": 100,
     "checkpoint_interval_ps": 1000,
     "random_velocities_kelvin": 300.0,
     "random_seed_policy": "unique recorded seed for every system and replicate"

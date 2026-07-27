@@ -41,6 +41,7 @@ R10 固定面板的筛选过程为：
 - [10 个配套复合物 PDB](docs/structures/USP15_R10)
 - [MD 与 SPR/MST 验证计划](docs/USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md)
 - [机器可读 OpenMM 参数](config/usp15_r10_openmm_md.json)
+- [10 个 MD 制备体系审计](docs/USP15_R10_MD_PREPARED_SYSTEM_AUDIT.json)
 
 ## 靶点与设计约束
 
@@ -71,7 +72,8 @@ interface-template 协议，是 geometry-conditioned compatibility test，
 
 - 结构图是 AF2 预测，不是实验解析结构；
 - 结构图不是分子动力学轨迹帧；
-- OpenMM 参数是尚未执行的前瞻性方案；
+- OpenMM 执行队列已建立且 10/10 体系通过制备审计，但真实 CUDA
+  smoke 与生产采样尚未完成；
 - 计算反筛不等于已经获得实验选择性；
 - 当前结果不能直接证明 USP15 抑制、天然互作阻断或细胞活性。
 
@@ -117,12 +119,14 @@ export OVO_ENV_DIR=/path/to/conda/envs/ovo
 
 ## 分子动力学与实验验证
 
-仓库提供的初始 MD 方案使用 OpenMM、AMBER ff19SB/OPC 显式溶剂，
-每个复合物计划运行 3 个独立的 100 ns 重复。需要分析 binder RMSD、
-界面接触占有率、热点保持、界面氢键、buried SASA 和重复间一致性。
+已实现的 MD 队列使用 OpenMM 8.5.2，并通过 AmberTools `tleap`
+构建 AMBER ff19SB/OPC 显式溶剂截角八面体。每个复合物运行 3 个独立的
+100 ns 重复；分析 binder RMSD、界面接触占有率、热点保持、界面氢键、
+buried SASA、相对 MM/GBSA 和重复间一致性。
 
-这些模拟尚未执行，因此仓库目前没有真实的轨迹、RMSD、接触占有率、
-MM/GBSA 或结合自由能结果。
+10/10 个制备体系已经通过拓扑、SHA-256、OPC 四点水、盒矢量和
+“生产期无位置约束”审计。共享 V100 当前需先完成真实 CUDA smoke，
+因此仓库目前仍没有可解释为结果的轨迹、RMSD、接触占有率或 MM/GBSA。
 
 SPR/MST 条件只作为方法开发起点。首轮实验应优先：
 
