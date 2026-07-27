@@ -1,7 +1,8 @@
 # USP15 DUSP Binder 设计项目
 
 [详细项目记录](README.md) ·
-[完整 HTML 报告](docs/USP15_R10_complete_report.html) ·
+[在线 HTML 报告](https://ydlongtao.github.io/usp15-dusp-binder-design/) ·
+[仓库内报告文件](docs/USP15_R10_complete_report.html) ·
 [10 个候选结构图](docs/figures/USP15_R10) ·
 [MIT License](LICENSE)
 
