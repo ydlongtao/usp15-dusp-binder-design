@@ -1,11 +1,12 @@
 # USP15 R10 OpenMM 迁移至 Minerva
 
-## 当前暂停点
+## 原服务器暂停点
 
 原服务器上的 `usp15-r10-md` 队列已按用户要求停止，GPU 已释放。10/10
 ff19SB/OPC 制备体系和 V100 CUDA smoke 审计均已通过。`rank01/seed0`
-只完成了最小化和 NVT，正在进行的 NPT-1 被中断；正式无约束生产采样尚未
-开始，因此当前仍为 0/30 个完整重复。
+完成了最小化、NVT 和第一段 NPT，第二段 NPT 被中断；正式无约束生产
+采样尚未开始。该部分状态已迁移到 Minerva，原服务器保持暂停且未被
+重新连接或重启。
 
 迁移必须保留：
 
@@ -33,6 +34,12 @@ bash scripts/minerva/convert_docker_archive_to_sif.sh \
   /path/to/md_openmm/build/usp15-openmm-8.5.2.docker.tar.gz \
   /path/to/containers/usp15-openmm-8.5.2.sif
 ```
+
+2026-07-27 的实际转换使用 Apptainer 1.4.5，生成的 SIF 为
+1,210,654,720 bytes，SHA-256 为
+`e270764ce7307c3f0b4bcfe339deb425d2093e9e436ea8f7f4240f9852ba8d92`。
+容器内 OpenMM 版本核验为 8.5.2，临时展开归档和 rootfs 均在构建完成后
+自动清理。
 
 ## 上传后校验
 
@@ -74,6 +81,24 @@ bash scripts/minerva/submit_smoke.sh
 
 只有 `smoke_minerva/audit.json` 为 `passed` 才能提交正式数组。
 
+首次 Minerva smoke（LSF `258355644`）在最小化后创建第二个 CUDA
+Context 时失败。独立诊断确认 H100、驱动、CUDA Driver API、SIF 和单个
+完整体系 Context 均正常；问题是前一个 OpenMM Context 仍存活时创建
+下一个 Context。脚本现会在每个阶段结束后显式释放 Context 并运行垃圾
+回收，未改变力场、温压、步长、约束或采样长度。首次失败目录和日志均
+保留。
+
+修复后的 smoke（LSF `258356236`）通过全部审计：
+
+- OpenMM 8.5.2，CUDA 平台；
+- 25,000 个生产步，实际 0.05 ns；
+- 5 个间隔 10 ps 的轨迹帧；
+- 3336 个蛋白原子；
+- `production_restraints=false`。
+
+smoke 只证明运行链路正确，其 0.05-ns 结构指标不能用于宣称 MD 稳定性
+或结合结论。
+
 ## 30 个串行重复
 
 ```bash
@@ -89,14 +114,20 @@ bash scripts/minerva/submit_replica_array.sh
 SASA、氢键及相对 MM/GBSA。需要局部重提时可设置
 `MINERVA_ARRAY_RANGE`，例如 `MINERVA_ARRAY_RANGE=1-3`。
 
-## 尚需用户提供
+2026-07-27 已提交正式数组 LSF `258356480`，范围 `1-30%1`，资源为
+`select[h100nvl]` 和单 GPU exclusive-process。第 1 项从迁移的
+`rank01/seed0` 已完成阶段状态继续运行，其余项目保持等待，确保本项目
+GPU 阶段始终严格串行。提交时仍为 0/30 个完整 100-ns 重复。
 
-- Minerva 用户名或已配置的 SSH host alias；
-- LSF project account，例如 `acc_xxx`；
-- Minerva 目标存储路径；
-- 希望使用的 GPU 型号；默认模板为 `h100nvl`，并使用
-  `select[h100nvl]` 的 Minerva LSF 资源语法；
-- 是否通过 `rsync/scp` 或 Globus 上传。
+## 已验证的运行配置
+
+- 已复用用户主动建立的 Minerva SSH 会话，不需要切换网络；
+- 原服务器仍位于虚拟网络中，迁移执行期间不与其建立连接；
+- LSF project account、工作目录和 scratch 目录均通过环境变量传入，
+  不写入仓库；
+- 正式 GPU 队列使用 `gpu`，smoke/诊断使用 `gpuexpress`；
+- H100 NVL 资源语法为 `select[h100nvl]`；
+- 全量迁移采用 `rsync`，上传后 660 个文件的 SHA-256 清单验证通过。
 
 ## 参考
 

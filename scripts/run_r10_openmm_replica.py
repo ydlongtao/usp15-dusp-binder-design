@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 from pathlib import Path
 import sys
@@ -118,6 +119,11 @@ def run_stage(
     )
     simulation.step(steps)
     save_state_and_pdb(simulation, state_path, pdb_path)
+    # Minerva H100 nodes reject creation of a second OpenMM CUDA Context while
+    # the preceding Context is still alive in the same Python process.
+    # Explicitly release each completed stage before constructing the next one.
+    del simulation
+    gc.collect()
     return state_path
 
 
@@ -215,6 +221,8 @@ def main():
                 300.0 * unit.kelvin, args.seed
             )
             save_state_and_pdb(simulation, minimized_state, minimized_pdb)
+            del simulation
+            gc.collect()
 
         nvt = run_stage(
             "nvt_0p5ns" if not args.smoke else "nvt_smoke",
