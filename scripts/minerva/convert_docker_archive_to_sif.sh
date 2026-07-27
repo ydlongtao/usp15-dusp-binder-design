@@ -32,7 +32,27 @@ export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-"$(dirname "$output_sif")/.apptainer
 export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-"$(dirname "$output_sif")/.apptainer-cache"}
 mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
 
-"$runtime" build "$output_sif" "docker-archive:$archive"
+archive_type=${APPTAINER_ARCHIVE_TYPE:-}
+if [[ -z "$archive_type" ]]; then
+  if tar -tf "$archive" | grep -qx 'oci-layout'; then
+    archive_type=oci-archive
+  elif tar -tf "$archive" | grep -qx 'manifest.json'; then
+    archive_type=docker-archive
+  else
+    echo "Archive is neither an OCI layout nor a Docker archive: $archive" >&2
+    exit 5
+  fi
+fi
+case "$archive_type" in
+  oci-archive|docker-archive) ;;
+  *)
+    echo "Unsupported APPTAINER_ARCHIVE_TYPE: $archive_type" >&2
+    exit 6
+    ;;
+esac
+
+echo "Building from ${archive_type}:$archive"
+"$runtime" build "$output_sif" "${archive_type}:$archive"
 "$runtime" exec "$output_sif" /opt/conda/bin/python -c \
   'import openmm; print(openmm.__version__)'
 sha256sum "$output_sif" >"$output_sif.sha256"

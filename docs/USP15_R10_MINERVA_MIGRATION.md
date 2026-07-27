@@ -23,7 +23,8 @@ Minerva 使用 IBM LSF，不使用 Slurm。正式 GPU 队列为 `gpu`，上限 1
 `CUDA_VISIBLE_DEVICES`，脚本不得覆盖它。
 
 Minerva 支持 Apptainer/Singularity。计算节点默认无外网，因此先上传
-Docker archive，再在登录节点转换为 SIF：
+OCI/Docker archive，再转换为 SIF。转换脚本会根据 `oci-layout` 或
+`manifest.json` 自动选择 `oci-archive:` 或 `docker-archive:`：
 
 ```bash
 bash scripts/minerva/convert_docker_archive_to_sif.sh \
