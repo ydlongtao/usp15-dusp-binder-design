@@ -110,10 +110,39 @@ The final archive contains:
 - FASTA, candidate metrics, elimination reasons, and manifest;
 - one design complex plus three USP15, three USP4, and three USP11 predictions
   for each exported candidate;
+- one best-seed USP15 PDB and one standardized whole-complex/hotspot JPEG for
+  each exported candidate;
 - positive-screen, interface-audit, selectivity, homolog-preparation, and
   ProteinQC reports;
-- the R10 plan and this results document.
+- the R10 plan, this results document, a prospective OpenMM MD parameter file,
+  and SPR/MST starting guidance.
 
 Wet-lab validation remains required. A practical first pass should express all
 10 representatives, then measure USP15 binding and USP4/USP11 counterspecificity
 before testing any mechanistic or cellular effect.
+
+## Structure visualization and prospective validation addendum
+
+The complete HTML report now embeds standardized views of all 10 best positive
+USP15 AF2 seeds. The source-hotspot numbering
+`A50/A52/A53/A55/A57/A61` maps to
+`B45/B47/B48/B50/B52/B56` in the exported AF2 PDBs because prediction chain B
+is renumbered from 1. These figures remain geometry-conditioned AF2
+predictions; they are not MD trajectory frames or experimental structures.
+
+High-resolution figures and their matching PDBs are available in:
+
+- [`figures/USP15_R10`](figures/USP15_R10)
+- [`structures/USP15_R10`](structures/USP15_R10)
+
+The prospective, not-yet-executed MD and experimental validation plan is
+documented in:
+
+- [`USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md`](USP15_R10_STRUCTURE_MD_AND_SPR_MST_PLAN.md)
+- [`../config/usp15_r10_openmm_md.json`](../config/usp15_r10_openmm_md.json)
+
+The MD plan specifies OpenMM, AMBER ff19SB/OPC, three independent 100-ns
+replicates per complex for the initial screen, extension of selected replicates
+to 500 ns, interface-retention analyses, and prospective computational triage
+criteria. No MD trajectory, RMSD, contact occupancy, MM/GBSA, or binding-free
+energy result has been generated in this addendum.
