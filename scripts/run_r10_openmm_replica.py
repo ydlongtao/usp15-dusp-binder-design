@@ -143,6 +143,15 @@ def main():
             return
 
     pdb = PDBFile(str(args.prepared_dir / "solvated.pdb"))
+    preparation = json.loads(
+        (args.prepared_dir / "preparation.json").read_text()
+    )
+    protein_atom_count = int(preparation["protein_atoms"])
+    if protein_atom_count <= 0 or protein_atom_count >= pdb.topology.getNumAtoms():
+        raise RuntimeError(
+            f"Invalid audited protein atom count {protein_atom_count} for "
+            f"{pdb.topology.getNumAtoms()} total atoms"
+        )
     system_nvt = deserialize(args.prepared_dir / "system_nvt.xml")
     system_npt = deserialize(args.prepared_dir / "system_npt.xml")
     system_production = deserialize(
@@ -258,12 +267,16 @@ def main():
             simulation.loadCheckpoint(production_checkpoint.read_bytes())
         else:
             simulation.context.setState(deserialize(npt2))
+            # A serialized equilibration State carries its accumulated step
+            # count and time.  Production is a new stage, so reset both here.
+            # A true production checkpoint restart intentionally retains them.
+            simulation.context.setStepCount(0)
+            simulation.context.setTime(0.0 * unit.picosecond)
 
-        protein_atom_indices = [
-            atom.index
-            for atom in pdb.topology.atoms()
-            if atom.residue.chain.id in {"A", "B"}
-        ]
+        # tleap/OpenMM may assign solvent to reused PDB chain identifiers.
+        # The audited AMBER topology always stores the binder and target first,
+        # followed by water and ions, so chain-ID selection is unsafe here.
+        protein_atom_indices = list(range(protein_atom_count))
         trajectory_interval = 5000     # 10 ps
         log_interval = 50000           # 100 ps
         checkpoint_interval = 500000   # 1 ns
@@ -305,6 +318,11 @@ def main():
         remaining = production_steps - simulation.currentStep
         if remaining > 0:
             simulation.step(remaining)
+        if simulation.currentStep != production_steps:
+            raise RuntimeError(
+                f"Production ended at step {simulation.currentStep}; "
+                f"expected {production_steps}"
+            )
 
         final_state = args.output_dir / "production_final.state.xml"
         final_pdb = args.output_dir / "production_final.pdb"

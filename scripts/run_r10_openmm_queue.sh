@@ -4,6 +4,8 @@ set -euo pipefail
 : "${USP15_MD_DIR:?Set USP15_MD_DIR to the R10 md_openmm directory}"
 
 image=${OPENMM_IMAGE:-usp15-openmm:8.5.2}
+allow_shared_gpu=${USP15_ALLOW_SHARED_GPU:-0}
+minimum_free_gpu_mb=${USP15_MIN_FREE_GPU_MB:-20000}
 scripts_dir="$USP15_MD_DIR/scripts"
 inputs_dir="$USP15_MD_DIR/inputs"
 prepared_root="$USP15_MD_DIR/prepared"
@@ -46,6 +48,24 @@ wait_for_free_gpu() {
     )
     if [[ ${#gpu_pids[@]} -eq 0 ]]; then
       return 0
+    fi
+    if [[ "$allow_shared_gpu" == "1" ]]; then
+      free_gpu_mb=$(
+        nvidia-smi \
+          --query-gpu=memory.free \
+          --format=csv,noheader,nounits 2>/dev/null |
+          awk 'NR == 1 {print int($1)}'
+      )
+      if [[ "$free_gpu_mb" =~ ^[0-9]+$ ]] &&
+         (( free_gpu_mb >= minimum_free_gpu_mb )); then
+        {
+          printf '%s\tshared_gpu_authorized\tfree_mb=%s\tpids=' \
+            "$(date -Is)" "$free_gpu_mb"
+          printf '%s,' "${gpu_pids[@]}"
+          echo
+        } >>"$logs_dir/gpu_wait.log"
+        return 0
+      fi
     fi
     {
       printf '%s\twaiting_for_gpu\t' "$(date -Is)"
@@ -149,6 +169,16 @@ if [[ ! -s "$USP15_MD_DIR/smoke/analysis/summary.json" ]]; then
       --output-dir /campaign/smoke/analysis \
       --burn-in-ns 0 \
       >"$logs_dir/smoke_analysis.log" 2>&1
+fi
+
+if [[ ! -s "$USP15_MD_DIR/smoke/audit.json" ]]; then
+  "${container_base[@]}" \
+    python /campaign/scripts/audit_r10_openmm_smoke.py \
+      --status /campaign/smoke/rank01_seed0/status.json \
+      --analysis /campaign/smoke/analysis/summary.json \
+      --preparation /campaign/prepared/rank01/preparation.json \
+      --output /campaign/smoke/audit.json \
+      >"$logs_dir/smoke_audit.log" 2>&1
 fi
 
 for rank in $(seq -w 1 10); do

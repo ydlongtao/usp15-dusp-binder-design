@@ -1,5 +1,5 @@
 {
-  "status": "execution_queued_pending_cuda_smoke",
+  "status": "cuda_smoke_passed_production_running",
   "scope": {
     "systems": 10,
     "input_structure": "best USP15 AF2 positive seed for each R10 candidate",

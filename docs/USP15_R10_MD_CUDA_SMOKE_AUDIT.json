@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "analysis_completed": true,
+    "five_10ps_frames": true,
+    "observed_duration_0p05ns": true,
+    "openmm_at_least_8_5": true,
+    "platform_cuda": true,
+    "production_steps_exact": true,
+    "production_unrestrained": true,
+    "protein_atom_subset_exact": true,
+    "run_completed": true
+  },
+  "expected_protein_atoms": 3336,
+  "observed_duration_ns": 0.05,
+  "observed_frames": 5,
+  "observed_protein_atoms": 3336,
+  "status": "passed",
+  "wall_seconds": 84.74677515029907
+}
