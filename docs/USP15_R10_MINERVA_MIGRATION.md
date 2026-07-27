@@ -65,7 +65,7 @@ bash scripts/minerva/upload_rsync.sh
 export LSF_PROJECT=acc_yourlab
 export USP15_MD_DIR=/minerva/path/md_openmm
 export OPENMM_SIF=/minerva/path/containers/usp15-openmm-8.5.2.sif
-export MINERVA_GPU_MODEL=a100
+export MINERVA_GPU_MODEL=h100nvl
 bash scripts/minerva/submit_smoke.sh
 ```
 
@@ -77,7 +77,7 @@ bash scripts/minerva/submit_smoke.sh
 export LSF_PROJECT=acc_yourlab
 export USP15_MD_DIR=/minerva/path/md_openmm
 export OPENMM_SIF=/minerva/path/containers/usp15-openmm-8.5.2.sif
-export MINERVA_GPU_MODEL=a100
+export MINERVA_GPU_MODEL=h100nvl
 bash scripts/minerva/submit_replica_array.sh
 ```
 
@@ -91,7 +91,8 @@ SASA、氢键及相对 MM/GBSA。需要局部重提时可设置
 - Minerva 用户名或已配置的 SSH host alias；
 - LSF project account，例如 `acc_xxx`；
 - Minerva 目标存储路径；
-- 希望使用的 GPU 型号；默认模板为 `a100`；
+- 希望使用的 GPU 型号；默认模板为 `h100nvl`，并使用
+  `select[h100nvl]` 的 Minerva LSF 资源语法；
 - 是否通过 `rsync/scp` 或 Globus 上传。
 
 ## 参考

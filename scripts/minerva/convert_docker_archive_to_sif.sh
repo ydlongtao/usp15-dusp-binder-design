@@ -14,6 +14,10 @@ if [[ ! -s "$archive" ]]; then
   echo "Docker archive not found: $archive" >&2
   exit 3
 fi
+if ! command -v "$runtime" >/dev/null 2>&1 &&
+   type module >/dev/null 2>&1; then
+  module load apptainer/1.4.5
+fi
 if ! command -v "$runtime" >/dev/null 2>&1; then
   if command -v singularity >/dev/null 2>&1; then
     runtime=singularity

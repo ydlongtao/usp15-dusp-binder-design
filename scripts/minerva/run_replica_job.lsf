@@ -5,6 +5,11 @@ set -euo pipefail
 : "${USP15_MD_DIR:?Set USP15_MD_DIR to the transferred md_openmm directory}"
 : "${OPENMM_SIF:?Set OPENMM_SIF to the OpenMM 8.5.2 SIF image}"
 
+if ! command -v apptainer >/dev/null 2>&1 &&
+   ! command -v singularity >/dev/null 2>&1 &&
+   type module >/dev/null 2>&1; then
+  module load apptainer/1.4.5
+fi
 if ! grep -q '"status": "passed"' "$USP15_MD_DIR/smoke_minerva/audit.json"; then
   echo "Minerva-specific CUDA smoke has not passed" >&2
   exit 5

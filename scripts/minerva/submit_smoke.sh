@@ -6,7 +6,7 @@ set -euo pipefail
 : "${OPENMM_SIF:?Set an absolute Minerva path to the OpenMM SIF image}"
 
 queue=${MINERVA_GPU_QUEUE:-gpuexpress}
-gpu_model=${MINERVA_GPU_MODEL:-a100}
+gpu_model=${MINERVA_GPU_MODEL:-h100nvl}
 walltime=${MINERVA_SMOKE_WALLTIME:-02:00}
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
@@ -25,9 +25,7 @@ bsub \
   -P "$LSF_PROJECT" \
   -q "$queue" \
   -n 4 \
-  -R "span[hosts=1]" \
-  -R "rusage[mem=8000]" \
-  -R "$gpu_model" \
+  -R "select[$gpu_model] span[hosts=1] rusage[mem=8000]" \
   -gpu "num=1" \
   -W "$walltime" \
   -oo "$USP15_MD_DIR/lsf_logs/smoke.%J.out" \

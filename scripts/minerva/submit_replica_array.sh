@@ -11,7 +11,7 @@ if ! grep -q '"status": "passed"' "$USP15_MD_DIR/smoke_minerva/audit.json"; then
 fi
 
 queue=${MINERVA_GPU_QUEUE:-gpu}
-gpu_model=${MINERVA_GPU_MODEL:-a100}
+gpu_model=${MINERVA_GPU_MODEL:-h100nvl}
 walltime=${MINERVA_REPLICA_WALLTIME:-36:00}
 array_range=${MINERVA_ARRAY_RANGE:-1-30}
 maximum_concurrent=${MINERVA_MAX_CONCURRENT:-1}
@@ -36,9 +36,7 @@ bsub \
   -P "$LSF_PROJECT" \
   -q "$queue" \
   -n 4 \
-  -R "span[hosts=1]" \
-  -R "rusage[mem=8000]" \
-  -R "$gpu_model" \
+  -R "select[$gpu_model] span[hosts=1] rusage[mem=8000]" \
   -gpu "num=1" \
   -W "$walltime" \
   -oo "$USP15_MD_DIR/lsf_logs/replica.%J.%I.out" \

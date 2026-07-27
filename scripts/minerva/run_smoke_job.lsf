@@ -4,6 +4,11 @@ set -euo pipefail
 : "${USP15_MD_DIR:?Set USP15_MD_DIR to the transferred md_openmm directory}"
 : "${OPENMM_SIF:?Set OPENMM_SIF to the OpenMM 8.5.2 SIF image}"
 
+if ! command -v apptainer >/dev/null 2>&1 &&
+   ! command -v singularity >/dev/null 2>&1 &&
+   type module >/dev/null 2>&1; then
+  module load apptainer/1.4.5
+fi
 runtime=${APPTAINER_CMD:-apptainer}
 if ! command -v "$runtime" >/dev/null 2>&1; then
   runtime=singularity
