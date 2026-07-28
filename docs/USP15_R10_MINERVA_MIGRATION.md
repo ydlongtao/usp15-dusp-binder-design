@@ -114,10 +114,16 @@ bash scripts/minerva/submit_replica_array.sh
 SASA、氢键及相对 MM/GBSA。需要局部重提时可设置
 `MINERVA_ARRAY_RANGE`，例如 `MINERVA_ARRAY_RANGE=1-3`。
 
-2026-07-27 已提交正式数组 LSF `258356480`，范围 `1-30%1`，资源为
-`select[h100nvl]` 和单 GPU exclusive-process。第 1 项从迁移的
-`rank01/seed0` 已完成阶段状态继续运行，其余项目保持等待，确保本项目
-GPU 阶段始终严格串行。提交时仍为 0/30 个完整 100-ns 重复。
+2026-07-27 首次正式数组 LSF `258356480` 的第 1 项完成了 100-ns 轨迹和
+结构分析，但相对 MM/GBSA 因容器内 `AMBERHOME` 未设置而失败；完整轨迹、
+分析结果和失败日志均保留。已将 `APPTAINERENV_AMBERHOME=/opt/conda`
+加入 Minerva 作业环境，并用容器内 `MMPBSA.py -h` 验证修复。旧数组的
+未运行元素已取消，新的严格串行数组为 LSF `258390152`，范围
+`1-30%1`，资源为 `select[h100nvl]` 和单 GPU exclusive-process。一次终端
+输出延迟导致的重复提交 `258390152` 在启动前已取消，唯一保留的数组为
+`258390007`。新数组
+会复用第 1 项已完成的轨迹，仅重跑修复后的 MM/GBSA；其余项目从各自
+的 checkpoint 或初始状态开始。
 
 ## 已验证的运行配置
 

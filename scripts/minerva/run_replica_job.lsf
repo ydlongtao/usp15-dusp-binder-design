@@ -24,6 +24,7 @@ if ! command -v "$runtime" >/dev/null 2>&1; then
   runtime=singularity
 fi
 export APPTAINERENV_PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+export APPTAINERENV_AMBERHOME=/opt/conda
 
 run_dir="$USP15_MD_DIR/runs/rank${rank}/seed${seed}"
 analysis_dir="$USP15_MD_DIR/analysis/rank${rank}/seed${seed}"
