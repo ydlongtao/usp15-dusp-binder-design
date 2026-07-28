@@ -10,6 +10,9 @@ prepared_dir=$1
 replica_dir=$2
 output_dir=$3
 mkdir -p "$output_dir"
+# MMPBSA.py creates intermediate files in the current working directory.
+# Keep those files on the GPFS work allocation rather than the 30-GB home NFS.
+cd "$output_dir"
 
 if [[ -s "$output_dir/FINAL_RESULTS_MMPBSA.dat" ]]; then
   exit 0
