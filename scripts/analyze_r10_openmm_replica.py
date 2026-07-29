@@ -239,6 +239,17 @@ def main():
     target_sasa = md.shrake_rupley(target_only, mode="atom").sum(axis=1)
     buried_sasa_a2 = (binder_sasa + target_sasa - complex_sasa) * 100.0
 
+    # Keep the 1-ns SASA sampling explicit rather than expanding it to every
+    # 10-ps frame in per_frame.csv.  This provides a compact time series for
+    # reports while preserving the bounded analysis cost.
+    with (args.output_dir / "buried_sasa_timeseries.csv").open(
+        "w", newline=""
+    ) as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["time_ns", "buried_sasa_a2"])
+        for time_ps, value in zip(sampled.time, buried_sasa_a2):
+            writer.writerow([float(time_ps) / 1000.0, float(value)])
+
     hbonds = md.baker_hubbard(
         sampled, freq=0.10, periodic=False, exclude_water=True
     )
