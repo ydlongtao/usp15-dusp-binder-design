@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>USP15 DUSP Binder 设计与动力学分析说明书</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;color:#1f2937;max-width:1120px;margin:0 auto;padding:2rem 1.2rem;background:#f8fafc}
+main{background:white;padding:2.2rem 2.5rem;box-shadow:0 2px 12px #00000012}h1{margin-top:0;color:#123b5d}h2{margin-top:2.2rem;color:#155e75;border-bottom:2px solid #cffafe;padding-bottom:.3rem}h3{color:#334155}.lead{font-size:1.08rem;background:#eff6ff;border-left:5px solid #2563eb;padding:1rem 1.2rem}.warning{background:#fff7ed;border-left:5px solid #ea580c;padding:1rem 1.2rem}.ok{background:#f0fdf4;border-left:5px solid #16a34a;padding:1rem 1.2rem}table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.94rem}th,td{border:1px solid #cbd5e1;padding:.55rem .65rem;vertical-align:top}th{background:#e2e8f0;text-align:left}code{background:#f1f5f9;padding:.12rem .3rem;border-radius:3px}pre{background:#0f172a;color:#e2e8f0;padding:1rem;overflow:auto;border-radius:5px}.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem;margin:1rem 0}.step{border:1px solid #bae6fd;border-radius:6px;padding:.8rem;background:#f0f9ff}.small{color:#64748b;font-size:.9rem}.toc a{color:#0369a1;text-decoration:none}.toc li{margin:.3rem 0}.metric{font-family:ui-monospace,monospace;color:#075985}
+</style></head>
+<body><main>
+<h1>USP15 DUSP Binder 设计、模拟与分析说明书</h1>
+<p class="small">项目：USP15_DUSP_R1 · 目标：USP15 N 端 DUSP 域 · 文档用途：方法、参数与可复现性记录</p>
+<p class="lead"><b>核心结论：</b>本项目采用“结构热点定义 → RFdiffusion 生成骨架 → 无半经验阈值放宽的结构/序列筛选 → USP4/USP11 反筛 → OpenMM 显式水分子动力学”的逐层流程。计算结果用于排序和实验设计，不等同于实验结合、抑制或绝对热力学结论。</p>
+
+<h2 id="toc">目录</h2><ol class="toc"><li><a href="#target">靶点与热点</a></li><li><a href="#design">Binder 如何设计</a></li><li><a href="#software">软件与运行环境</a></li><li><a href="#screen">筛选与反筛</a></li><li><a href="#md">OpenMM 动力学模拟</a></li><li><a href="#metrics">指标含义</a></li><li><a href="#thermo">热力学/能量估计</a></li><li><a href="#limits">限制与实验衔接</a></li><li><a href="#repro">文件与复现</a></li></ol>
+
+<h2 id="target">1. 靶蛋白与热点如何确定</h2>
+<p>设计靶点是 USP15 N 端 DUSP 域，而不是 USP15 全长蛋白。主结构参考为 PDB <b>3T9L</b>，使用链 A 的残基 6–134，并清理水、配体、其他链和非标准记录。</p>
+<p>热点来自结构已知的 USP15 DUSP–UbV 界面（PDB <b>6DJ9</b>），而不是从一次 MD 轨迹事后挑选。源结构编号为：</p>
+<p class="metric">A50, A52, A53, A55, A57, A61</p>
+<p>在部分标准化 AF2 输出中，目标链编号映射为 B45、B47、B48、B50、B52、B56；报告中必须注明这是编号映射，不是不同的生物学热点。</p>
+<p>热点判定的第一性原理是：优先选择实验复合物中处于界面、可被候选 binder 接触、且在结构坐标中有明确侧链几何的残基。随后用界面接触数和界面热点数作为硬门控，而不是用单一打分替代结构证据。</p>
+
+<h2 id="design">2. Binder 的设计流程</h2>
+<div class="flow"><div class="step"><b>① 结构准备</b><br>3T9L A6–134、六个热点、链和编号标准化。</div><div class="step"><b>② 骨架生成</b><br>OVO/RFdiffusion RFD1 生成 45–80 aa 微型蛋白骨架。</div><div class="step"><b>③ 序列设计</b><br>LigandMPNN/ProteinMPNN 路线；temperature 0.1，omit C。</div><div class="step"><b>④ 结构筛选</b><br>界面热点、AF2 几何、界面面积和质量控制。</div><div class="step"><b>⑤ 选择性反筛</b><br>将候选姿态映射至 USP4/USP11 DUSP 核心。</div><div class="step"><b>⑥ 动力学验证</b><br>OpenMM ff19SB/OPC，三重复 100 ns。</div></div>
+<h3>骨架设计矩阵</h3><table><tr><th>维度</th><th>设置</th></tr><tr><td>长度池</td><td>45–60 aa；61–80 aa</td></tr><tr><td>骨架类型</td><td>Complex_base；Complex_beta</td></tr><tr><td>Contig</td><td><code>A6-134/0 45-60</code> 或 <code>A6-134/0 61-80</code></td></tr><tr><td>初始硬门控</td><td><span class="metric">N_contact_hotspots ≥ 8</span>；<span class="metric">N_hotspots_on_interface ≥ 4</span></td></tr><tr><td>扩增规模</td><td>四池 pilot 后再扩展；单张 V100/H100 阶段始终串行</td></tr></table>
+<p>原始计划曾包含 ProteinMPNN–FastRelax；实际项目遵循“不使用 PyRosetta”的约束，因此不把 PyRosetta/FastRelax 作为当前 R10 的必要依赖。RFD3 也没有替代 RFD1。</p>
+
+<h2 id="software">3. 软件、模型与环境</h2>
+<table><tr><th>环节</th><th>软件/模型</th><th>用途</th></tr><tr><td>骨架生成</td><td>OVO Binder Design、RFdiffusion RFD1</td><td>在指定 DUSP 表面生成可折叠 binder 骨架</td></tr><tr><td>序列设计</td><td>LigandMPNN；早期计划含 ProteinMPNN</td><td>根据骨架和界面设计序列</td></tr><tr><td>结构预测</td><td>AlphaFold2：model_1_multimer_tt_3rec；校准阶段使用 model_2_ptm/模板模式</td><td>评估复合物几何、iPAE、pLDDT 和 binder RMSD</td></tr><tr><td>结构质量</td><td>ProteinQC、DSSP、ESM-IF、ProteinSol 等</td><td>序列组成、二级结构、可溶性和低复杂度检查</td></tr><tr><td>动力学</td><td>OpenMM 8.5.2 CUDA</td><td>显式水 NPT 模拟</td></tr><tr><td>轨迹分析</td><td>MDTraj/分析脚本</td><td>RMSD、接触、SASA、氢键、RMSF</td></tr><tr><td>相对能量</td><td>AmberTools MMPBSA.py</td><td>相对 MM/GBSA 诊断</td></tr><tr><td>容器</td><td>Apptainer；固定 Boltz/OpenMM 镜像</td><td>保证运行环境可复现</td></tr></table>
+<p><b>明确排除：</b>PyRosetta、RFD3，以及将 MM/GBSA 直接换算成 KD 或绝对结合自由能。</p>
+
+<h2 id="screen">4. 正向筛选与 USP4/USP11 反筛</h2>
+<h3>正向 AF2 门控</h3><table><tr><th>指标</th><th>阈值</th><th>解释</th></tr><tr><td>AF2 iPAE</td><td><span class="metric">≤ 10</span></td><td>目标–binder 相对位置不确定性较低</td></tr><tr><td>Target-aligned binder RMSD</td><td><span class="metric">≤ 2 Å</span></td><td>binder 姿态接近设计/参考姿态</td></tr><tr><td>Binder pLDDT</td><td><span class="metric">≥ 80</span></td><td>binder 局部预测置信度较高</td></tr><tr><td>Rosetta ddG</td><td><span class="metric">≤ −20</span></td><td>原计划的界面能辅助指标；不替代 AF2/几何门控</td></tr><tr><td>Contact molecular surface</td><td><span class="metric">≥ 600 Å²</span></td><td>界面接触规模</td></tr><tr><td>Buried unsatisfied H-bonds</td><td><span class="metric">≤ 4</span></td><td>埋藏未满足氢键惩罚</td></tr></table>
+<h3>选择性反筛</h3><p>将 USP15 候选 binder 姿态保持不变，映射到人 USP4（5CTR）和 USP11（4MEL）的 DUSP 核心；统一复合物链标识后运行相同 AF2 测试。每个 off-target 的两种模型都要求：</p><ul><li><span class="metric">ΔiPAE ≥ 5</span>（相对 USP15 变差）；并且</li><li>off-target iPAE <span class="metric">≥ 15</span> 或 binder RMSD <span class="metric">&gt; 4 Å</span>。</li></ul><p>通过正筛但不通过反筛的设计不能作为 USP15 选择性候选。</p>
+
+<h2 id="md">5. OpenMM 动力学模拟协议</h2>
+<table><tr><th>参数</th><th>固定设置</th></tr><tr><td>体系</td><td>10 个复合物；每个复合物 3 个独立随机种子</td></tr><tr><td>力场</td><td>AMBER ff19SB</td></tr><tr><td>水模型</td><td>OPC 显式水</td></tr><tr><td>温度/压力</td><td>300 K / 1 bar，NPT</td></tr><tr><td>积分步长</td><td>2 fs</td></tr><tr><td>生产长度</td><td>每重复 100 ns；总计划采样 3.0 μs</td></tr><tr><td>坐标输出</td><td>蛋白原子每 10 ps 一帧；100 ns 理论约 10,000 帧</td></tr><tr><td>生产约束</td><td><b>无 binder–target 距离或位置约束</b></td></tr><tr><td>硬件调度</td><td>Minerva H100；LSF 数组 <code>258390007[1-30]%1</code>，最大并发 1</td></tr><tr><td>容器环境</td><td>OpenMM 8.5.2 CUDA；AmberTools 的 <code>AMBERHOME=/opt/conda</code></td></tr></table>
+<p>前 20 ns 作为 burn-in，随后对每条轨迹分析 20–100 ns。项目当前已有部分完成重复，但完整 30 条轨迹完成前，不报告总体稳定性结论。</p>
+
+<h2 id="metrics">6. 动力学指标如何解释</h2>
+<table><tr><th>指标</th><th>计算对象</th><th>合理解释</th><th>不能单独推出</th></tr><tr><td>Target-aligned binder RMSD</td><td>固定 USP15 后的 binder Cα/骨架偏移</td><td>设计姿态是否保持</td><td>实验亲和力</td></tr><tr><td>Target RMSD</td><td>USP15 相对初始结构的偏移</td><td>靶点是否整体变形</td><td>催化活性变化</td></tr><tr><td>RMSF</td><td>每个残基的时间波动</td><td>识别柔性环和末端</td><td>结合能大小</td></tr><tr><td>Native contact fraction</td><td>初始界面接触在各帧的保留比例</td><td>原生界面保持程度</td><td>接触是否足以产生结合</td></tr><tr><td>Hotspot occupancy</td><td>六个热点参与接触的帧比例</td><td>关键残基参与的持续性</td><td>因果热力学贡献</td></tr><tr><td>Buried SASA</td><td>binder+target 单体 SASA 减复合物 SASA</td><td>界面埋藏面积的动态变化</td><td>绝对 ΔG</td></tr><tr><td>界面氢键</td><td>跨链氢键的频率/占有率</td><td>可能的局部稳定网络</td><td>实验氢键存在证明</td></tr><tr><td>COM distance</td><td>binder/target 质心距离</td><td>整体靠近或分离趋势</td><td>结合事件的充分证据</td></tr></table>
+
+<h2 id="thermo">7. 热力学与能量分析方法</h2>
+<p>当前采用的是逐帧、相对的 MM/GBSA 诊断：</p><pre>&amp;gb
+  igb=8, saltcon=0.150,
+/</pre><ul><li>隐式溶剂 GB 模型：<code>igb=8</code></li><li>离子强度：<code>saltcon=0.150 M</code></li><li>AmberTools 原子半径/拓扑处理：<code>mbondi3</code></li><li>从 burn-in 后 20 ns 开始，每 1 ns 抽帧</li><li>输出复合物、受体、binder 的相对能量差与分布</li></ul>
+<div class="warning"><b>边界：</b>MM/GBSA 在本项目中只用于同一协议内的相对排序和诊断，不能直接解释为绝对结合自由能，不能换算 KD、kon 或 koff。若需要严格热力学量，应另行设计 alchemical free-energy、umbrella sampling、metadynamics 或 PMF 方案，并进行收敛性和误差分析。</div>
+
+<h2 id="limits">8. 限制与实验衔接</h2>
+<ol><li>结构预测、界面评分和 MD 都是模型依赖的计算证据。</li><li>无约束 bound-state MD 可检验已构建复合物在时间窗内的保持程度，但不能证明从游离态自发结合。</li><li>若要观察结合过程，应使用分离态、多独立重复、无位置约束的 association protocol，并把“未观察到结合”如实报告。</li><li>SPR、MST、ITC 或酶活实验应使用计算结果作为候选排序，而不是把计算阈值当作实验阳性标准。</li><li>当前阶段未产生完整 30 条重复前，不作整体稳定性、选择性或热力学结论。</li></ol>
+
+<h2 id="repro">9. 文件与复现入口</h2>
+<table><tr><th>内容</th><th>路径/入口</th></tr><tr><td>目标准备</td><td><code>scripts/prepare_usp15_target.py</code></td></tr><tr><td>界面/热点审计</td><td><code>scripts/audit_r10_interfaces.py</code></td></tr><tr><td>OpenMM 生产</td><td><code>scripts/run_r10_openmm_replica.py</code></td></tr><tr><td>轨迹分析</td><td><code>scripts/analyze_r10_openmm_replica.py</code></td></tr><tr><td>MM/GBSA</td><td><code>scripts/run_r10_mmpbsa.sh</code></td></tr><tr><td>MD 汇总</td><td><code>scripts/summarize_r10_openmm_md.py</code></td></tr><tr><td>本地当前 HTML</td><td><code>local_results/r10_current/USP15_R10_current_results.html</code></td></tr><tr><td>Minerva 监控</td><td>LSF 数组 <code>258390007</code>；最大并发 <code>%1</code></td></tr></table>
+<p class="ok"><b>复现原则：</b>保留每次失败现场、随机种子、容器版本、参数文件、checkpoint、XTC、CSV 和日志；任何阈值、靶点、力场、采样长度或权限变化都必须单独记录，不能在结果整理阶段隐式修改。</p>
+</main></body></html>
