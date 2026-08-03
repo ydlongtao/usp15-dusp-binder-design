@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${USP15_MD_DIR:?Set USP15_MD_DIR to the transferred md_openmm directory}"
+: "${OPENMM_SIF:?Set OPENMM_SIF to the OpenMM 8.5.2 SIF image}"
+: "${LSB_JOBID:?This script must run as an LSF job}"
+
+if ! command -v apptainer >/dev/null 2>&1 &&
+   ! command -v singularity >/dev/null 2>&1 &&
+   type module >/dev/null 2>&1; then
+  module load apptainer/1.4.5
+fi
+runtime=${APPTAINER_CMD:-apptainer}
+if ! command -v "$runtime" >/dev/null 2>&1; then
+  runtime=singularity
+fi
+export APPTAINERENV_PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+
+report="$USP15_MD_DIR/reports/minerva_cuda_diagnostic.${LSB_JOBID}.txt"
+mkdir -p "$USP15_MD_DIR/reports"
+
+{
+  date --iso-8601=seconds
+  hostname
+  printf 'CUDA_VISIBLE_DEVICES=%s\n' "${CUDA_VISIBLE_DEVICES-<unset>}"
+  printf 'LSB_GPU_ID=%s\n' "${LSB_GPU_ID-<unset>}"
+  nvidia-smi --query-gpu=name,uuid,driver_version,memory.total,memory.free \
+    --format=csv,noheader
+  "$runtime" --version
+
+  "$runtime" exec --nv --bind "$USP15_MD_DIR:/campaign" \
+    "$OPENMM_SIF" /bin/bash -lc '
+    set +e
+    printf "container_CUDA_VISIBLE_DEVICES=%s\n" "${CUDA_VISIBLE_DEVICES-<unset>}"
+    nvidia-smi --query-gpu=name,uuid,driver_version,memory.total,memory.free \
+      --format=csv,noheader
+    printf "%s\n" "--- OpenMM CUDA dependencies ---"
+    ldd /opt/conda/lib/libOpenMMCUDA.so
+    printf "%s\n" "--- CUDA runtime files ---"
+    find /opt/conda -maxdepth 4 \
+      \( -name "libcudart.so*" -o -name "libnvrtc.so*" -o -name "libcuda.so*" \) \
+      -print | sort
+    printf "%s\n" "--- Python/OpenMM probe ---"
+    /opt/conda/bin/python - <<"PY"
+import ctypes
+import gc
+import os
+from pathlib import Path
+import traceback
+
+import openmm as mm
+from openmm import XmlSerializer, unit
+from openmm.app import PDBFile, Simulation
+
+print("openmm_version", mm.__version__)
+print("plugin_load_failures", mm.Platform.getPluginLoadFailures())
+print(
+    "platforms",
+    [mm.Platform.getPlatform(i).getName() for i in range(mm.Platform.getNumPlatforms())],
+)
+
+cuda = ctypes.CDLL("libcuda.so.1")
+driver_version = ctypes.c_int()
+device_count = ctypes.c_int()
+print("cuInit", cuda.cuInit(0))
+print("cuDriverGetVersion", cuda.cuDriverGetVersion(ctypes.byref(driver_version)))
+print("cuda_driver_api_version", driver_version.value)
+print("cuDeviceGetCount", cuda.cuDeviceGetCount(ctypes.byref(device_count)))
+print("cuda_device_count", device_count.value)
+
+platform = mm.Platform.getPlatformByName("CUDA")
+print("cuda_platform_properties", list(platform.getPropertyNames()))
+system = mm.System()
+system.addParticle(1.0)
+integrator = mm.VerletIntegrator(0.001)
+try:
+    context = mm.Context(
+        system,
+        integrator,
+        platform,
+        {"DeviceIndex": "0", "Precision": "mixed"},
+    )
+    print("context_status", "passed")
+    print("context_platform", context.getPlatform().getName())
+except Exception as exc:
+    print("context_status", "failed")
+    print("context_error_type", type(exc).__name__)
+    print("context_error", str(exc))
+    traceback.print_exc()
+    raise
+
+del context
+del integrator
+gc.collect()
+
+print("--- rank01 full-system context lifecycle ---")
+pdb = PDBFile("/campaign/prepared/rank01/solvated.pdb")
+system_xml = Path("/campaign/prepared/rank01/system_nvt.xml").read_text()
+full_system = XmlSerializer.deserialize(system_xml)
+
+
+def make_full_simulation(seed):
+    integrator = mm.LangevinMiddleIntegrator(
+        300.0 * unit.kelvin,
+        1.0 / unit.picosecond,
+        2.0 * unit.femtosecond,
+    )
+    integrator.setRandomNumberSeed(seed)
+    return Simulation(
+        pdb.topology,
+        full_system,
+        integrator,
+        platform,
+        {"DeviceIndex": "0", "Precision": "mixed"},
+    )
+
+
+first = make_full_simulation(1)
+print("full_context_first", "passed")
+try:
+    second = make_full_simulation(2)
+    print("full_context_second_while_first_alive", "passed")
+    del second
+except Exception as exc:
+    print("full_context_second_while_first_alive", "failed")
+    print("full_context_second_error", repr(exc))
+
+del first
+gc.collect()
+third = make_full_simulation(3)
+print("full_context_after_release", "passed")
+del third
+gc.collect()
+PY
+  '
+} >"$report" 2>&1
+
+cat "$report"

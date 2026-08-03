@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "seed": 210001,
+  "production_ns": 100.0,
+  "production_steps": 50000000,
+  "initial_separation_a": 35.0,
+  "production_restraints": false,
+  "openmm_version": "8.5.2",
+  "platform": "OpenCL",
+  "elapsed_s": 103790.2801656723,
+  "binder_atoms": 1236,
+  "target_atoms": 2100
+}

@@ -1,178 +1,77 @@
 # USP15 DUSP Binder Design
 
-这是一个面向人 USP15 N 端 DUSP 结构域的计算型微型蛋白 binder 设计项目。工作流使用 OVO 提供的 RFdiffusion RFD1、LigandMPNN 和 AlphaFold2/ColabDesign 模块，通过 Nextflow + Docker 在 GPU 服务器上直接运行。
+Computational design and validation of a compact protein binder for the N-terminal DUSP domain of human USP15.
 
-本项目仅覆盖计算设计、排序和导出，不包含湿实验，也不宣称候选一定抑制 USP15 酶活或阻断特定天然互作。
+**Project status:** R10 geometry-conditioned design produced ten computational representatives. A separate rank01 association campaign completed three independent 100 ns OpenMM trajectories from an approximately 35 Å separated state. The trajectories did not show a global binder–target association event; therefore this repository does not claim experimental binding, affinity, inhibition, or selectivity.
 
-## 设计对象
+## Start here
 
-- 目标蛋白：human USP15，UniProt `Q9Y4E8`
-- 主结构：[3T9L](https://www.rcsb.org/structure/3T9L) chain A residues 6–134
-- 界面参考：[6DJ9](https://www.rcsb.org/structure/6DJ9)
-- 热点：`A50,A52,A53,A55,A57,A61`
-- 设计长度：45–60 aa 和 61–80 aa
-- RFdiffusion 权重：`Complex_base` 和 `Complex_beta`
-- 反筛对象：USP4 [5CTR](https://www.rcsb.org/structure/5CTR) 与 USP11 [4MEL](https://www.rcsb.org/structure/4MEL)
+- [Latest English association report](docs/USP15_rank01_association_results_en.html)
+- [English rank01/seed0 MD visual report](docs/USP15_rank01_seed0_MD_visual_report_en.html)
+- [R10 complete report](docs/USP15_R10_complete_report.html)
+- [Association protocol](docs/USP15_R10_RANK01_ASSOCIATION_PROTOCOL.md)
+- [Association summaries and metrics](docs/results/USP15_rank01_association/)
 
-四个设计池及全部阈值记录在 [`config/campaign.json`](config/campaign.json) 和 [`config/pools.tsv`](config/pools.tsv)。
+The self-contained association report includes a real trajectory-based MP4/GIF animation, the rank01 sequence, three-run summary statistics, center-of-mass distance traces, hotspot-contact diagnostics, and the limitations of interpreting an unbiased association attempt.
 
-## 当前计算协议
+## Scientific scope
 
-本版本不使用 PyRosetta：
+The target is human USP15 (UniProt `Q9Y4E8`), using the DUSP region represented by chain A residues 6–134 of PDB `3T9L`. The interface reference is PDB `6DJ9`; the design hotspot set is `A50,A52,A53,A55,A57,A61`. USP4 (`5CTR`) and USP11 (`4MEL`) were used for computational off-target screening in R10.
 
-1. RFdiffusion 生成 RFD1 backbone。
-2. OVO backbone metrics 执行硬过滤：
-   - `N_contact_hotspots >= 8`
-   - `N_hotspots_on_interface >= 4`
-3. LigandMPNN 使用 ProteinMPNN weights，每个 backbone 生成 3 条序列：
-   - temperature `0.1`
-   - omit `C`
-   - 不设置氨基酸 bias
-4. AF2 `model_1_multimer` target-template、3 recycles 执行 smoke 和主正筛。
-5. 最终候选增加 `model_1_ptm` target-template 与 USP4/USP11 反筛。
-6. 用界面 ΔSASA、碰撞、ProteinQC、ESM-IF、ProteinSol 和序列性质替代 Rosetta 指标。
+The project covers:
 
-OpenMM 相互作用能和埋藏极性原子检查仅用于排序，不能解释为 Rosetta ddG 或 Rosetta buried-unsatisfied hydrogen bonds。
+1. RFdiffusion RFD1 backbone generation.
+2. LigandMPNN sequence design with omit-C constraints.
+3. AF2/R10 geometry-conditioned ranking and USP4/USP11 computational counter-screening.
+4. OpenMM 8.5.2 association and bound-state diagnostics.
+5. Reproducible trajectory analysis and self-contained HTML reporting.
 
-## 运行环境
+It does not include wet-lab validation and does not establish a mechanism of USP15 inhibition or disruption of a native interaction.
 
-已测试环境：
+## Rank01 association campaign
 
-- OVO 1.0.2
-- Nextflow 25.10.4
-- Docker + NVIDIA Container Toolkit
-- 单张 NVIDIA V100 32 GB
-- OVO Docker images：
-  - `ovo-rfdiffusion`
-  - `ovo-python-structure`
-  - `ovo-ligandmpnn`
-  - `ovo-colabdesign`
+The rank01 binder sequence is:
 
-设置以下环境变量；不要将真实服务器路径写入仓库：
-
-```bash
-export USP15_CAMPAIGN_DIR=/path/to/USP15_DUSP_R1
-export OVO_HOME_DIR=/path/to/initialized/ovo
-export OVO_ENV_DIR=/path/to/conda/envs/ovo
+```text
+MKIKLVFSDGTEVEVEVDPSDTVLELKKKIEELTGYKPEQLLLFHKGKKLEDGKSLTYHGVKEGDTIHVNIVKEEE
 ```
 
-准备 campaign 目录：
+Simulation settings:
 
-```bash
-mkdir -p "$USP15_CAMPAIGN_DIR"/{config,inputs,scripts,reports}
-cp config/* "$USP15_CAMPAIGN_DIR/config/"
-cp scripts/* "$USP15_CAMPAIGN_DIR/scripts/"
-chmod 750 "$USP15_CAMPAIGN_DIR"/scripts/*
-```
+- OpenMM 8.5.2; AMBER ff19SB; OPC explicit water.
+- 300 K, 1 bar, 2 fs timestep.
+- Three independent 100 ns NPT runs (`seed0`–`seed2`).
+- Initial binder–target separation approximately 35 Å.
+- No binder–target distance or positional restraints during production.
+- Dell V100 OpenCL backend was used because the local CUDA/NVRTC path was incompatible with this runtime; the molecular model and sampling protocol were unchanged.
 
-## 准备目标结构
+The analysis reports binder–target center-of-mass distance, minimum heavy-atom distance, Cα contacts, and six hotspot contact occupancies. A global association event was not observed: the center-of-mass distance remained approximately 32–37 Å across all three runs. Local contacts are reported as diagnostics and must not be interpreted as a bound-state affinity measurement.
 
-先从 RCSB 下载 `3T9L.pdb`，然后提取和验证 chain A 6–134：
+## R10 design protocol
 
-```bash
-python scripts/prepare_usp15_target.py \
-  --source /path/to/3T9L.pdb \
-  --output "$USP15_CAMPAIGN_DIR/inputs/USP15_DUSP_3T9L_A6-134.pdb" \
-  --report "$USP15_CAMPAIGN_DIR/reports/USP15_DUSP_3T9L_A6-134.validation.json"
-```
+- Target: USP15 DUSP, 3T9L chain A residues 6–134.
+- Hotspot hard filters: `N_contact_hotspots >= 8` and `N_hotspots_on_interface >= 4`.
+- Sequence design: LigandMPNN/ProteinMPNN weights, omit `C`, no amino-acid bias.
+- R10 positive ranking: calibrated AF2 `model_2_ptm` interface-template protocol.
+- Counter-screen: USP4 and USP11 using the fixed selectivity criteria.
+- PyRosetta was not used in the current workflow.
 
-脚本要求残基 6–134 连续、无插入码、主链原子完整且六个热点全部存在。
+R10 candidates are geometry-conditioned computational designs. Their AF2 structures are predictions, not experimental structures, and the association trajectories do not provide an experimental KD, kon, koff, or absolute binding free energy.
 
-## 执行顺序
+## Reproducibility
 
-### 1. 四组 15-step preview
+Relevant scripts are in `scripts/`, including:
 
-```bash
-for pool in \
-  USP15_R1_short_base \
-  USP15_R1_short_beta \
-  USP15_R1_long_base \
-  USP15_R1_long_beta
-do
-  "$USP15_CAMPAIGN_DIR/scripts/run_preview.sh" "$pool"
-done
-```
+- `scripts/minerva/run_rank01_association.py`
+- `scripts/analyze_rank01_association.py`
+- `scripts/generate_rank01_association_batch_report.py`
+- `scripts/make_rank01_association_movie.pml`
+- `scripts/render_rank01_association_movie.sh`
 
-如需保留新的随机 preview，传入第二个 attempt 参数：
+The corrected analysis maps DUSP-local hotspot numbers onto the prepared protein-only PDB numbering and preserves the original failed analysis directory for auditability.
 
-```bash
-"$USP15_CAMPAIGN_DIR/scripts/run_preview.sh" USP15_R1_short_beta 2
-```
+The three raw XTC trajectories and checkpoints are approximately 600 MB in total and are retained in the local `local_results/rank01_association_dell/` directory. The repository contains the derived metrics, final PDB files, animation, and self-contained HTML report; raw trajectories are intentionally not committed because each XTC exceeds GitHub's standard 100 MB file limit.
 
-### 2. 四组 100-backbone pilot
+## License
 
-先启动第一组：
-
-```bash
-"$USP15_CAMPAIGN_DIR/scripts/run_backbone_pilot.sh" USP15_R1_short_base
-```
-
-其余三组串行执行：
-
-```bash
-"$USP15_CAMPAIGN_DIR/scripts/run_pilot_queue.sh"
-```
-
-服务器只有一张 GPU 时，不要并行启动多个 RFdiffusion 或 AF2 pool。
-
-### 3. LigandMPNN + AF2 smoke
-
-四组 pilot 均完成且至少有一个 backbone 通过硬过滤后运行：
-
-```bash
-"$USP15_CAMPAIGN_DIR/scripts/run_sequence_af2_smoke.sh" USP15_R1_short_base
-```
-
-也可使用门控脚本等待 pilot 队列后自动选择第一个有合格 backbone 的 pool：
-
-```bash
-"$USP15_CAMPAIGN_DIR/scripts/run_smoke_after_pilots.sh"
-```
-
-### 4. 扩量门控
-
-只有以下条件全部满足后才能扩展到每池 1000 个 backbone：
-
-- 四组 preview 成功完成；
-- 四组各 100-backbone pilot 成功完成；
-- backbone 硬过滤实际产生合格设计；
-- LigandMPNN 生成恰好 3 条无 Cys 序列；
-- AF2 smoke 通过：
-  - iPAE ≤ 10
-  - target-aligned binder RMSD ≤ 2 Å
-  - binder pLDDT ≥ 80
-
-阈值失败时停止并报告，不自动放宽。
-
-## 主要脚本
-
-| 脚本 | 用途 |
-|---|---|
-| `prepare_usp15_target.py` | 清理并验证 3T9L target |
-| `run_preview.sh` | 运行单个 15-step RFdiffusion preview |
-| `validate_backbones.py` | 独立复核链长与热点接触 |
-| `run_backbone_pilot.sh` | 生成 100 个完整 backbone 并运行 OVO 硬过滤 |
-| `summarize_backbone_metrics.py` | 汇总 pilot 合格率 |
-| `run_pilot_queue.sh` | 将剩余 pilot 串行排队 |
-| `run_sequence_af2_smoke.sh` | 运行 LigandMPNN 3-sequence + AF2 smoke |
-| `run_smoke_after_pilots.sh` | pilot 完成后的自动门控 |
-
-## 输出与可恢复性
-
-每个 Nextflow 阶段独立保存：
-
-- `trace.txt`
-- `report.html`
-- `nextflow.log`
-- `nextflow.stdout.log`
-- published PDB 和 CSV
-
-脚本检测成功 trace 后会跳过已完成阶段，并使用 Nextflow `-resume` 恢复可缓存任务。
-
-## 安全与科学边界
-
-- 不提交 OVO token、SSH 地址、用户名、私有服务器路径或数据库。
-- 登录凭据只在交互式会话中使用。
-- `raw/`、`results/`、Nextflow `work/` 和模型文件不进入 Git。
-- 计算结果只能作为后续实验验证的候选来源。
-- 6DJ9 证明该 DUSP 表面可被 UbV 结合，但不保证设计会调控某个特定天然互作。
+MIT. See [LICENSE](LICENSE).

@@ -1,0 +1,22 @@
+{
+  "frames": 10000,
+  "duration_ns": 100.0,
+  "com_distance_a": {
+    "min": 31.868680953979492,
+    "median": 33.700401306152344,
+    "max": 36.98905944824219
+  },
+  "min_heavy_atom_distance_a": {
+    "min": 1.4608571397570203,
+    "median": 1.8895220369176808
+  },
+  "hotspot_occupancy": {
+    "45": 0.423,
+    "47": 0.7193,
+    "48": 0.9151,
+    "50": 0.9854,
+    "52": 0.9733,
+    "56": 0.0396
+  },
+  "note": "Association attempt from a separated state; no binding event is assumed if the trajectory remains separated."
+}

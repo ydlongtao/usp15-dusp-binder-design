@@ -1,0 +1,7 @@
+run_id	candidate_id	source_pool	backbone_file	temperature	sequences_per_backbone	omit_amino_acids
+r2a_sb55_t005	short_beta_55	USP15_R1_short_beta	rfdiffusion_55_standardized.pdb	0.05	3	C
+r2a_sb55_t010	short_beta_55	USP15_R1_short_beta	rfdiffusion_55_standardized.pdb	0.10	3	C
+r2a_sb75_t005	short_beta_75	USP15_R1_short_beta	rfdiffusion_75_standardized.pdb	0.05	3	C
+r2a_sb75_t010	short_beta_75	USP15_R1_short_beta	rfdiffusion_75_standardized.pdb	0.10	3	C
+r2a_lb76_t005	long_beta_76	USP15_R1_long_beta	rfdiffusion_76_standardized.pdb	0.05	3	C
+r2a_lb76_t010	long_beta_76	USP15_R1_long_beta	rfdiffusion_76_standardized.pdb	0.10	3	C

@@ -1,0 +1,7 @@
+condition_id	mode	length_range	contig	model_weights	generation_hotspots	backbones	scaffold_min_length	scaffold_max_length
+B1	standard	45-55	A6-134/0 45-55	Complex_beta	A50,A53,A55,A61	50
+B2	standard	45-55	A6-134/0 45-55	Complex_beta	A50,A52,A55,A61	50
+B3	standard	56-70	A6-134/0 56-70	Complex_beta	A50,A53,A55,A61	50
+B4	standard	56-70	A6-134/0 56-70	Complex_beta	A50,A52,A55,A61	50
+S1	scaffold	50-65	A6-134/0 50-65	Complex_base	A50,A53,A55,A61	50	50	65
+S2	scaffold	60-75	A6-134/0 60-75	Complex_base	A50,A52,A55,A61	50	60	75

@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+campaign_dir="${USP15_CAMPAIGN_DIR:?Set USP15_CAMPAIGN_DIR to the campaign working directory}"
+ovo_home_dir="${OVO_HOME_DIR:?Set OVO_HOME_DIR to the initialized OVO home directory}"
+ovo_env_dir="${OVO_ENV_DIR:?Set OVO_ENV_DIR to the OVO conda environment}"
+ovo_package_dir="${OVO_PACKAGE_DIR:-${ovo_env_dir}/lib/python3.13/site-packages/ovo}"
+nextflow_bin="${NEXTFLOW_BIN:-${ovo_env_dir}/bin/nextflow}"
+python_bin="${PYTHON_BIN:-${ovo_env_dir}/bin/python}"
+partial_dir="${campaign_dir}/r3/partial_diffusion"
+matrix="${campaign_dir}/config/r3_partial_diffusion.tsv"
+phase_dir="${R3_PROTEINMPNN_DIR:-${campaign_dir}/r3/proteinmpnn_rescue}"
+input_dir="${phase_dir}/input"
+sequence_work="${phase_dir}/sequence_work"
+sequence_dir="${phase_dir}/sequence"
+sequence_pdb_dir="${sequence_dir}/standardized_pdb"
+af2_dir="${phase_dir}/af2"
+report_dir="${phase_dir}/reports"
+af2_test="af2_model_1_multimer_tt_3rec"
+jsonl="${af2_dir}/output/contig1_batch1/${af2_test}.jsonl"
+
+mkdir -p \
+    "${input_dir}" \
+    "${sequence_work}/input" \
+    "${sequence_dir}" \
+    "${af2_dir}" \
+    "${report_dir}" \
+    "${phase_dir}/work/af2"
+exec 9>"${phase_dir}/r3_proteinmpnn.lock"
+if ! flock -n 9; then
+    echo "Another R3 ProteinMPNN rescue driver holds the lock"
+    exit 1
+fi
+
+find "${input_dir}" -maxdepth 1 -type f -name '*.pdb' -delete
+"${python_bin}" "${campaign_dir}/scripts/select_r3_partial_backbones.py" \
+    --phase-dir "${partial_dir}" \
+    --matrix "${matrix}" \
+    --output-dir "${input_dir}" \
+    --report "${report_dir}/selection.json" \
+    --per-condition 1
+if [[ "$(find "${input_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 3 ]]; then
+    echo "Expected one selected backbone per partial_T condition"
+    exit 1
+fi
+
+if [[ ! -f "${sequence_dir}/proteinmpnn.completed" ]]; then
+    find "${sequence_work}/input" -maxdepth 1 -type f -name '*.pdb' -delete
+    cp "${input_dir}"/*.pdb "${sequence_work}/input/"
+    (
+        cd "${sequence_work}"
+        "${python_bin}" \
+            "${ovo_package_dir}/pipelines/ligandmpnn-sequence-design/bin/prepare_json.py" \
+            --pdb_dir input \
+            --pdb_ids_json pdb_ids.json \
+            --redesigned_residues_json redesigned_residues_multi.json \
+            --remark_json remark_multi.json
+        docker run --rm --gpus all \
+            --user "$(id -u):$(id -g)" \
+            -v "${sequence_work}:/work" \
+            -w /work \
+            ovo-ligandmpnn \
+            bash -lc '
+                ln -s /opt/LigandMPNN/model_params ./model_params
+                python /opt/LigandMPNN/run.py \
+                    --model_type protein_mpnn \
+                    --pdb_path_multi pdb_ids.json \
+                    --redesigned_residues_multi redesigned_residues_multi.json \
+                    --out_folder output \
+                    --number_of_batches 3 \
+                    --pack_side_chains 1 \
+                    --number_of_packs_per_design 1 \
+                    --repack_everything 1 \
+                    --temperature 0.1 \
+                    --omit_AA C
+            ' > "${sequence_dir}/proteinmpnn.stdout.log" 2>&1
+        bash \
+            "${ovo_package_dir}/pipelines/ligandmpnn-sequence-design/bin/copy_remarks.sh" \
+            remark_multi.json \
+            output/packed/ \
+            "${sequence_pdb_dir}/"
+    )
+    touch "${sequence_dir}/proteinmpnn.completed"
+fi
+
+if [[ "$(find "${sequence_pdb_dir}" -maxdepth 1 -type f -name '*.pdb' | wc -l)" -ne 9 ]]; then
+    echo "Expected nine ProteinMPNN sequence PDBs"
+    exit 1
+fi
+if awk '
+    $1 == "ATOM" && substr($0, 22, 1) == "A" &&
+    substr($0, 18, 3) == "CYS" {found=1}
+    END {exit found ? 0 : 1}
+' "${sequence_pdb_dir}"/*.pdb; then
+    echo "ProteinMPNN output contains binder Cys"
+    exit 1
+fi
+
+stage_completed() {
+    local trace_file="$1"
+    [[ -s "${trace_file}" ]] && awk -F '\t' \
+        'NR > 1 && $5 == "COMPLETED" && $6 == 0 {ok=1} END {exit !ok}' \
+        "${trace_file}"
+}
+if ! stage_completed "${af2_dir}/trace.txt"; then
+    (
+        cd "${af2_dir}"
+        "${nextflow_bin}" \
+            -log "${af2_dir}/nextflow.log" \
+            run \
+            -with-trace "${af2_dir}/trace.txt" \
+            -with-report "${af2_dir}/report.html" \
+            -work-dir "${phase_dir}/work/af2" \
+            "${ovo_package_dir}/pipelines/refolding" \
+            --publish_dir "${af2_dir}/output" \
+            --reference_files_dir "${ovo_home_dir}/reference_files" \
+            --shared_modules "ovo:${ovo_package_dir}" \
+            -config "${ovo_package_dir}/pipelines/nextflow_default.config" \
+            -config "${ovo_package_dir}/pipelines/refolding/nextflow.config" \
+            -profile docker \
+            -config "${ovo_home_dir}/nextflow_local.config" \
+            --max_memory 512GB \
+            -ansi-log false \
+            --input_designs "${sequence_pdb_dir}/" \
+            --native_pdb "${campaign_dir}/inputs/USP15_DUSP_3T9L_A6-134.pdb" \
+            --tests "${af2_test}" \
+            --design_type binder \
+            --batch_size 20 \
+            -resume \
+            > "${af2_dir}/nextflow.stdout.log" 2>&1
+    )
+fi
+if [[ ! -s "${jsonl}" ]] || [[ "$(wc -l < "${jsonl}")" -ne 9 ]]; then
+    echo "Expected nine ProteinMPNN AF2 records"
+    exit 1
+fi
+
+"${python_bin}" "${campaign_dir}/scripts/summarize_r3_partial_diffusion.py" \
+    --jsonl "${jsonl}" \
+    --sequence-pdb-dir "${sequence_pdb_dir}" \
+    --selection-report "${report_dir}/selection.json" \
+    --sequence-model protein_mpnn \
+    --csv-output "${report_dir}/af2_metrics.csv" \
+    --json-output "${report_dir}/summary.json" \
+    --fasta-output "${report_dir}/sequences.fasta"
+
+touch "${phase_dir}/r3_proteinmpnn_rescue.completed"
+echo "R3 ProteinMPNN rescue completed"

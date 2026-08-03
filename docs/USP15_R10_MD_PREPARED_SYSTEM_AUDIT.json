@@ -1,0 +1,231 @@
+{
+  "force_field": "AMBER ff19SB",
+  "openmm_minimum": "8.5",
+  "prepared_systems": 10,
+  "production_restraints": false,
+  "runtime_openmm": "8.5.2",
+  "status": "passed",
+  "systems": [
+    {
+      "atoms": 98403,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.218242700000001,
+        10.218242700000001,
+        10.2182427
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 1,
+      "salt_pairs": 65,
+      "waters": 23732
+    },
+    {
+      "atoms": 96573,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.15740211,
+        10.157402110000001,
+        10.15740211
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 2,
+      "salt_pairs": 63,
+      "waters": 23276
+    },
+    {
+      "atoms": 98055,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.207419810000001,
+        10.207419810000001,
+        10.207419810000001
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 3,
+      "salt_pairs": 64,
+      "waters": 23647
+    },
+    {
+      "atoms": 96807,
+      "box_angles_deg": [
+        109.47121900000002,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.165114840000001,
+        10.165114840000001,
+        10.165114840000001
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 4,
+      "salt_pairs": 63,
+      "waters": 23342
+    },
+    {
+      "atoms": 98323,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.21518734,
+        10.21518734,
+        10.21518734
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 5,
+      "salt_pairs": 64,
+      "waters": 23719
+    },
+    {
+      "atoms": 100961,
+      "box_angles_deg": [
+        109.47121900000002,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.296369590000001,
+        10.296369590000001,
+        10.29636959
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 6,
+      "salt_pairs": 66,
+      "waters": 24366
+    },
+    {
+      "atoms": 92276,
+      "box_angles_deg": [
+        109.47121900000002,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.003878700000001,
+        10.003878700000001,
+        10.003878700000001
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 7,
+      "salt_pairs": 60,
+      "waters": 22215
+    },
+    {
+      "atoms": 94831,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.094553730000001,
+        10.094553730000001,
+        10.094553730000001
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 8,
+      "salt_pairs": 62,
+      "waters": 22844
+    },
+    {
+      "atoms": 93287,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.03960911,
+        10.03960911,
+        10.03960911
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 9,
+      "salt_pairs": 61,
+      "waters": 22463
+    },
+    {
+      "atoms": 95289,
+      "box_angles_deg": [
+        109.471219,
+        109.471219,
+        109.471219
+      ],
+      "box_edge_lengths_nm": [
+        10.11061367,
+        10.11061367,
+        10.11061367
+      ],
+      "production_barostats": 1,
+      "production_restraint_forces": [],
+      "protein_chain_lengths": [
+        76,
+        129
+      ],
+      "rank": 10,
+      "salt_pairs": 62,
+      "waters": 22959
+    }
+  ],
+  "water": "OPC"
+}

@@ -1,0 +1,131 @@
+{
+  "status": "paused_for_minerva_migration_zero_completed_replicas",
+  "scope": {
+    "systems": 10,
+    "input_structure": "best USP15 AF2 positive seed for each R10 candidate",
+    "binder_chain": "A",
+    "usp15_dusp_chain": "B",
+    "source_target_numbering": "3T9L chain A residues 6-134",
+    "source_hotspots": [
+      "A50",
+      "A52",
+      "A53",
+      "A55",
+      "A57",
+      "A61"
+    ],
+    "prediction_hotspots": [
+      "B45",
+      "B47",
+      "B48",
+      "B50",
+      "B52",
+      "B56"
+    ]
+  },
+  "software": {
+    "engine": "OpenMM",
+    "minimum_version": "8.5",
+    "platform": "CUDA",
+    "precision": "mixed",
+    "force_field": "AmberTools leaprc.protein.ff19SB imported by OpenMM",
+    "water_and_ions": "AmberTools leaprc.water.opc imported by OpenMM"
+  },
+  "preparation": {
+    "experimental_construct": "tag-free USP15 DUSP and tag-free binder sequences",
+    "protonation_pH": 7.4,
+    "histidines": "assign from local hydrogen-bond environment and record per system",
+    "termini": "zwitterionic unless the experimental construct is chemically capped",
+    "missing_atoms": "rebuild standard heavy atoms and hydrogens; do not model unresolved non-target domains",
+    "solvent_shape": "truncated_octahedron",
+    "solvation_implementation": "AmberTools tleap solvateOct with OPCBOX; AMBER prmtop/inpcrd imported into OpenMM",
+    "minimum_solute_padding_nm": 1.2,
+    "ionic_strength_molar": 0.15,
+    "positive_ion": "Na+",
+    "negative_ion": "Cl-",
+    "neutralize": true
+  },
+  "nonbonded": {
+    "method": "PME",
+    "cutoff_nm": 1.0,
+    "constraints": "HBonds",
+    "rigid_water": true,
+    "dispersion_correction": true
+  },
+  "integrator": {
+    "type": "LangevinMiddleIntegrator",
+    "temperature_kelvin": 300.0,
+    "friction_per_ps": 1.0,
+    "timestep_fs": 2.0
+  },
+  "minimization": {
+    "tolerance_kj_per_mol_per_nm": 10.0,
+    "maximum_iterations": 20000
+  },
+  "equilibration": [
+    {
+      "ensemble": "NVT",
+      "duration_ns": 0.5,
+      "protein_heavy_atom_restraint_kj_per_mol_per_nm2": 1000
+    },
+    {
+      "ensemble": "NPT",
+      "duration_ns": 0.5,
+      "protein_heavy_atom_restraint_kj_per_mol_per_nm2": 100
+    },
+    {
+      "ensemble": "NPT",
+      "duration_ns": 1.0,
+      "protein_heavy_atom_restraint_kj_per_mol_per_nm2": 10
+    }
+  ],
+  "pressure_coupling": {
+    "type": "MonteCarloBarostat",
+    "pressure_bar": 1.0,
+    "temperature_kelvin": 300.0,
+    "frequency_steps": 25
+  },
+  "production": {
+    "ensemble": "NPT",
+    "replicates_per_complex": 3,
+    "initial_duration_ns_per_replicate": 100,
+    "extend_selected_duration_ns_per_replicate": 500,
+    "initial_total_complex_sampling_us": 3.0,
+    "coordinates_interval_ps": 10,
+    "state_interval_ps": 100,
+    "checkpoint_interval_ps": 1000,
+    "random_velocities_kelvin": 300.0,
+    "random_seed_policy": "unique recorded seed for every system and replicate"
+  },
+  "analysis": {
+    "alignment": "USP15 DUSP chain B C-alpha atoms",
+    "burn_in_ns": 20,
+    "metrics": [
+      "target-aligned binder C-alpha RMSD",
+      "binder backbone RMSF",
+      "USP15 DUSP backbone RMSD and RMSF",
+      "binder-target center-of-mass distance",
+      "interface contact count at 4.5 A",
+      "six-hotspot contact occupancy",
+      "interface hydrogen-bond occupancy",
+      "interface salt-bridge occupancy",
+      "interface buried SASA",
+      "secondary-structure retention"
+    ],
+    "hydrogen_bond_definition": "donor-acceptor distance <=3.5 A and donor-H-acceptor angle >=135 degrees",
+    "salt_bridge_definition": "oppositely charged heavy-atom distance <=4.0 A",
+    "reporting": "show each replicate and median with 95% bootstrap confidence interval; do not pool replicas before checking convergence",
+    "mm_gbsa": "optional relative diagnostic on evenly spaced post-burn-in frames; never convert directly to KD and never use as the only advancement gate"
+  },
+  "prospective_triage_not_validated": {
+    "purpose": "prioritize experimental order, not claim binding",
+    "criteria": [
+      "no persistent complex separation in any replicate",
+      "median target-aligned binder RMSD <=2.5 A",
+      "at least 70% of post-burn-in frames have binder RMSD <=3.0 A",
+      "at least four of six hotspot residues retain >=50% contact occupancy",
+      "median interface buried SASA >=600 A2",
+      "replicate conclusions are concordant"
+    ]
+  }
+}

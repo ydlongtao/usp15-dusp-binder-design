@@ -41,3 +41,6 @@ nextflow.stdout.log
 *.pdb
 *.pdb1
 *.trb
+!docs/structures/
+!docs/structures/USP15_R10/
+!docs/structures/USP15_R10/*.pdb

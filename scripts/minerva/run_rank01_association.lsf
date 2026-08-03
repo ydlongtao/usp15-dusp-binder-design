@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# LSF array: rank01 only, three independent unbiased association attempts.
+set -euo pipefail
+: "${LSB_JOBINDEX:?}"
+MD=/sc/arion/work/huangl21/usp15_dusp_binder_design/md_openmm
+SIF=/sc/arion/work/huangl21/usp15_dusp_binder_design/containers/usp15-openmm-8.5.2.sif
+seed=$((210001 + LSB_JOBINDEX))
+out="$MD/association/rank01/seed$((LSB_JOBINDEX-1))"
+mkdir -p "$out" "$MD/association_logs"
+export APPTAINERENV_PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+export APPTAINERENV_AMBERHOME=/opt/conda
+apptainer exec --nv --bind "$MD:/campaign" "$SIF" \
+  /opt/conda/bin/python /campaign/scripts/minerva/run_rank01_association.py \
+  --prepared-dir /campaign/prepared/rank01 \
+  --output-dir "/campaign/association/rank01/seed$((LSB_JOBINDEX-1))" \
+  --seed "$seed" --production-ns 100 --separation-a 35
