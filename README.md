@@ -8,7 +8,7 @@ Computational design and validation of a compact protein binder for the N-termin
 
 - [Latest English association report](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_rank01_association_results_en.html)
 - [English rank01/seed0 MD visual report](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_rank01_seed0_MD_visual_report_en.html)
-- [R10 complete report](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_R10_complete_report.html)
+- [R10 complete report — English](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_R10_complete_report_en.html)
 - [Association protocol](docs/USP15_R10_RANK01_ASSOCIATION_PROTOCOL.md)
 - [Association summaries and metrics](docs/results/USP15_rank01_association/)
 
