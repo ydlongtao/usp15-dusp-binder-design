@@ -1,0 +1,4 @@
+# Phase-A local smoke environment; model weights are downloaded to the user cache,
+# never committed to this repository.
+esm==3.2.1.post1
+httpx>=0.28,<0.29

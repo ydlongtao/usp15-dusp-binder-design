@@ -11,6 +11,8 @@ Computational design and validation of a compact protein binder for the N-termin
 - [R10 complete report — English](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_R10_complete_report_en.html)
 - [English design and analysis methods](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_DUSP_Binder_Design_Methods_en.html)
 - [English technical route](https://ydlongtao.github.io/usp15-dusp-binder-design/USP15_DUSP_Binder_Technical_Route_en.html)
+- [ESM3 integration plan](docs/ESM3_INTEGRATION_PLAN.md)
+- [ESM3 Phase-A smoke record](docs/ESM3_PHASE_A_SMOKE.md)
 - [Association summaries and metrics](docs/results/USP15_rank01_association/)
 
 The self-contained association report includes a real trajectory-based MP4/GIF animation, the rank01 sequence, three-run summary statistics, center-of-mass distance traces, hotspot-contact diagnostics, and the limitations of interpreting an unbiased association attempt.
