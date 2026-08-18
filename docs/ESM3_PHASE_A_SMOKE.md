@@ -40,3 +40,11 @@ python scripts/run_esm3_phase_a_smoke.py \
 - structure-track：尚未在本地 CPU 上运行；应在 Minerva H100 或兼容 CUDA 节点上继续验证。
 
 本次结果只证明 ESM3 可以在本地环境完成模型加载和最小序列生成，不代表任何 USP15 结合、亲和力或选择性结论。
+
+## 远端服务器审计（2026-08-19）
+
+- 主机：`dell` / Tesla V100-SXM2 32 GB；审计时可用显存约 18.4 GB。
+- 现有 `ovo-esm:latest` 镜像实际包含 ESM-2/ESM-IF1，不是 ESM3，未将其误用作 ESM3 环境。
+- 已在 `/DATABANK/users/hflt/ovo/esm3_phase_a/site` 隔离安装 ESM 3.2.1 及 CUDA 运行所需依赖。
+- 容器内 `ESM3`、`ESMProtein`、`GenerationConfig` 导入通过，PyTorch CUDA/V100 识别通过。
+- 官方 `esm3-sm-open-v1` 权重下载受当前链路带宽限制，真实权重推理暂未启动；未改变 OVO 或其他任务。
