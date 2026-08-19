@@ -48,3 +48,10 @@ python scripts/run_esm3_phase_a_smoke.py \
 - 已在 `/DATABANK/users/hflt/ovo/esm3_phase_a/site` 隔离安装 ESM 3.2.1 及 CUDA 运行所需依赖。
 - 容器内 `ESM3`、`ESMProtein`、`GenerationConfig` 导入通过，PyTorch CUDA/V100 识别通过。
 - 官方 `esm3-sm-open-v1` 权重下载受当前链路带宽限制，真实权重推理暂未启动；未改变 OVO 或其他任务。
+
+## 远端阶段 A 最终结果（2026-08-19）
+
+- sequence-track：通过；CUDA/V100，1 step，约 1.83 s。
+- structure-track：通过；CUDA/V100，1 step，约 2.91 s。
+- 结构输出：服务器 `results/esm3_structure_smoke.pdb`，并已复制到本地未跟踪结果目录供检查。
+- 组合判断：阶段 A smoke 完整通过，可以进入阶段 B 的 OVO/Nextflow 评估适配；尚未运行批量候选，也未改变现有 AF2 或选择性门控。
