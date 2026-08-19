@@ -39,3 +39,7 @@ ESM3 结果不得解释为 iPAE、binder RMSD、pLDDT、ddG、KD 或结合自由
 - Nextflow 发布目录：`/DATABANK/users/hflt/ovo/esm3_phase_a/results/phase_b_nf/candidates/`。
 
 这证明阶段 B 的容器化适配器和 Nextflow 发布路径可运行；尚未对全部候选批量运行，也没有将 ESM3 结果用于硬性筛选。
+
+## 阶段 B.2：批量评估
+
+使用 `scripts/split_fasta_records.py` 将候选 FASTA 拆分为单候选输入，再以 `maxForks 1` 运行 `esm3_eval.nf`。每个候选独立输出 JSON、CSV 和结构 PDB，随后使用 `scripts/summarize_esm3_batch.py` 聚合结果。批量结果仍然只作为正交 descriptor，不自动晋级候选。

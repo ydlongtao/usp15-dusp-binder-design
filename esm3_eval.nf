@@ -15,11 +15,11 @@ params.num_steps = 1
 
 process ESM3_EVAL {
     tag "${candidate_id}"
+    maxForks 1
     publishDir params.output_dir, mode: 'copy', saveAs: { filename -> "${candidate_id}/${filename}" }
 
     input:
     tuple val(candidate_id), path(fasta)
-    path adapter
 
     output:
     path 'esm3_eval.json', emit: json
@@ -32,7 +32,7 @@ process ESM3_EVAL {
     """
     mkdir -p out
     cp -L ${fasta.getName()} input.fasta
-    cp -L ${adapter.getName()} adapter.py
+    cp -L ${params.adapter_script} adapter.py
     docker run --rm --gpus all \\
       ${site_mount} ${cache_mount} \\
       -v \"\$PWD:/work\" -e PYTHONPATH=/esm3_site -e HF_HOME=/esm3_cache \\
@@ -51,6 +51,5 @@ workflow {
     }
     fasta_ch = Channel.fromPath(params.input_fasta, checkIfExists: true)
         .map { file -> tuple(file.baseName, file) }
-    adapter_ch = Channel.fromPath(params.adapter_script, checkIfExists: true)
-    ESM3_EVAL(fasta_ch, adapter_ch)
+    ESM3_EVAL(fasta_ch)
 }
