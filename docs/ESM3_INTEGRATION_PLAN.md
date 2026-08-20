@@ -45,6 +45,10 @@ OVO 文档中已有 ESMFold 复折叠选项，但 ESMFold 与 ESM3 不是同一�
 
 在阶段 B 稳定后，允许 ESM3 针对固定的 USP15 DUSP backbone 或界面条件生成候选序列。所有候选仍必须经过原有 ProteinQC、AF2 正向门控和 USP4/USP11 反筛。ESM3 内部评分不能替代 iPAE、target-aligned binder RMSD、binder pLDDT、实验 KD 或 Rosetta/物理能量指标。
 
+阶段 C 的第一步采用固定单链 binder backbone 的序列生成试运行。由于当前 ESM3 适配器不接受 USP15-binder 复合物作为联合条件，试运行结果只代表 backbone-conditioned sequence proposal；在通过 AF2 复合物重建和原有反筛前，不得解释为 USP15 结合候选。
+
+执行脚本：`scripts/run_esm3_phase_c_generate.py`。该脚本固定随机种子、温度和采样步数，输出 FASTA、JSON 审计和 CSV 清单；默认不允许 Cys 的后处理判断，但不替代 ProteinQC。
+
 ### 阶段 D：校准与长期维护
 
 使用已知阳性/阴性对照比较 ESM3、AF2 和 ESMFold 的一致性，建立版本化阈值和失败分类。只有完成独立校准后，才考虑把 ESM3 描述符用于候选排序；不因 ESM3 单一分数放宽原有门控。

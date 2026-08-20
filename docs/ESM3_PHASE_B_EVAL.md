@@ -54,3 +54,13 @@ ESM3 结果不得解释为 iPAE、binder RMSD、pLDDT、ddG、KD 或结合自由
 - 结果位置：远端 `/DATABANK/users/hflt/ovo/esm3_phase_b/`；权重和缓存仍留在服务器，不进入 Git。
 
 本批量结果确认了 ESM3 适配器、容器调用和 Nextflow 串行发布路径可重复运行；它没有改变原有 AF2、ddG、ProteinQC 或 USP4/USP11 选择性门控，也不构成结合亲和力或选择性证据。下一步若要接入 OVO UI/数据库，需要单独实现并审核 OVO 的结果注册接口（阶段 B.3）。
+
+## 阶段 C 首次试运行（2026-08-21）
+
+- 输入 backbone：已有 USP15 界面设计中的 binder chain A，长度 76 aa。
+- 模型与参数：`esm3-sm-open-v1`，ESM 3.2.1，sequence-track，20 steps，temperature 0.8，3 个固定种子样本，V100 CUDA。
+- 结果：模型加载和序列生成通过；3/3 FASTA 输出成功，3/3 不含 Cys。
+- 范围限制：该试运行只对固定单链 binder backbone 做条件序列生成，没有把 USP15 chain B 作为 ESM3 联合条件。因此输出是待验证的 sequence proposals，不是已确认的 USP15 binder。
+- 远端结果：`/DATABANK/users/hflt/ovo/esm3_phase_c/pilot_ak/`。
+
+下一步必须将生成序列送入原有 AF2 复合物流程，按 iPAE、target-aligned binder RMSD、binder pLDDT、ProteinQC 及 USP4/USP11 反筛逐条审核；在该步骤完成前不扩展为大规模 ESM3 生成。
