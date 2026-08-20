@@ -43,3 +43,14 @@ ESM3 结果不得解释为 iPAE、binder RMSD、pLDDT、ddG、KD 或结合自由
 ## 阶段 B.2：批量评估
 
 使用 `scripts/split_fasta_records.py` 将候选 FASTA 拆分为单候选输入，再以 `maxForks 1` 运行 `esm3_eval.nf`。每个候选独立输出 JSON、CSV 和结构 PDB，随后使用 `scripts/summarize_esm3_batch.py` 聚合结果。批量结果仍然只作为正交 descriptor，不自动晋级候选。
+
+## 阶段 B.2 批量运行记录（2026-08-20）
+
+- 输入：10 个来自 USP15 DUSP 候选集的 76 aa FASTA 记录。
+- 调度：Nextflow DSL2，`maxForks 1`，单张 Tesla V100-SXM2-32GB 串行执行。
+- 结果：10/10 workflow process 成功，10/10 sequence-track 通过，10/10 structure-track 通过。
+- 每个候选均生成 `esm3_eval.json`、`esm3_metrics.csv` 和 `esm3_structure.pdb`；批量汇总文件为 `esm3_batch_summary.json`。
+- 运行时：ESM 3.2.1、`esm3-sm-open-v1`、PyTorch 2.5.1+cu124；最终检查时 GPU 利用率为 0%，无残留 ESM3 进程。
+- 结果位置：远端 `/DATABANK/users/hflt/ovo/esm3_phase_b/`；权重和缓存仍留在服务器，不进入 Git。
+
+本批量结果确认了 ESM3 适配器、容器调用和 Nextflow 串行发布路径可重复运行；它没有改变原有 AF2、ddG、ProteinQC 或 USP4/USP11 选择性门控，也不构成结合亲和力或选择性证据。下一步若要接入 OVO UI/数据库，需要单独实现并审核 OVO 的结果注册接口（阶段 B.3）。
